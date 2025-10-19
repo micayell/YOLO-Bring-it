@@ -1,0 +1,142 @@
+server:
+  port: 0
+
+gateway:
+  ip: localhost
+
+spring:
+  application:
+    name: user-service
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+
+  # zipkin
+  zipkin:
+    base-url: http://127.0.0.1:9411
+    enabled: true
+  sleuth:
+    sampler:
+      probability: 1.0
+
+  # Database
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 1234
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      use_sql_comments: true
+    show-sql: true
+
+  # email
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: yolo.bringit.207
+    password: lhuf hwoa qgwd jlpj
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          starttls:
+            enable: true
+
+  # oauth
+  security:
+    oauth2:
+      client:
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+        registration:
+          kakao:
+            client-id: 2f774d3668b425e287eb5db4037cd24d
+            client-secret: Y0ofzufDQot7wKB7AwhfQ0sTVahiOgTm
+            client-authentication-method: client_secret_post
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            authorization-grant-type: authorization_code
+            client-name: kakao
+            scope:
+              - profile_nickname
+              - profile_image
+              - account_email
+
+  # redis -> api gate way redis와 동기화되어야 함
+  data:
+    redis:
+      port: 6379
+      host: localhost
+
+  #kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: user-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# JWT
+jwt:
+  secret: jA+YxXxRUvN+uE0V3zYmWg4kaSFO5XT+ANeOE93Eeb7Inw9BQ4QLQZgqZjC/qEygdz9WejAjNs80zyPvjh+7tA==
+  expiration: 1296000000
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka
+
+app:
+  front:
+    url: http://localhost:63342,http://localhost:3000,https://i13c207.p.ssafy.io,https://www.i13c207.p.ssafy.io,http://192.168.0.62:3000
+
+# S3/R2
+aws:
+  s3:
+    publicUrl: https://pub-1b87520b13004863b6faad8458f37850.r2.dev
+    endpointUrl: https://893ddb890911cb604dfcb67dbb99057c.r2.cloudflarestorage.com
+    bucket: yolo-bringit
+    region: APAC
+  accessKey: 41fa6efee1a1029b21a8086312e801c1
+  secretKey: 55115f9f5018f9c0d3400c9bee21481d2d12a19e8aaa928f2f9e941372d77f80
+
+# swagger
+springdoc:
+  swagger-ui:
+    enabled: true
+    display-request-duration: true
+
+swagger:
+  server-url: http://localhost:8080/api/v1/users
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - refresh
+          - health
+          - beans
+          - info
+          - busrefresh
+

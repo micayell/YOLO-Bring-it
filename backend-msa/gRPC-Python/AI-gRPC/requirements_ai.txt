@@ -1,0 +1,20 @@
+fastapi==0.115.2
+uvicorn==0.32.0
+ultralytics==8.3.1
+deepface==0.0.93
+pillow==10.4.0
+numpy==1.26.4
+opencv-python-headless==4.10.0.84
+matplotlib==3.9.2
+rembg==2.0.59
+transformers==4.45.2
+torch==2.4.1
+python-socketio==5.11.4
+mediapipe==0.10.21
+protobuf==4.25.3
+tensorflow==2.17.0
+tf-keras==2.17.0
+python-multipart==0.0.12
+librosa==0.10.2.post1  # 오디오 처리 (MFCC, pitch, tempo 등)
+scipy==1.13.1  # 코사인 유사도
+torchaudio==2.4.1  # Whisper 오디오 핸들링 (torch와 버전 맞춤)

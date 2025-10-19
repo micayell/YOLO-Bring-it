@@ -1,0 +1,28 @@
+server:
+  port: 8888
+spring:
+  application:
+    name: config-service
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+  profiles:
+    active: git
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:///Users/chaejinlim/Projects/ssafy/new/git-local-repo
+        git: #default
+          uri: https://lab.ssafy.com/if-else/yolo-bring-it-config.git
+          default-label: master
+          username: icj0103
+          password: 8Wv2BFmA8PVVeMy66F7y
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, busrefresh

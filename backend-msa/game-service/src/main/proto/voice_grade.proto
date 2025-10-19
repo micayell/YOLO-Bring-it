@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package voice_grade;
+
+service VoiceGradeService {
+  rpc CheckSimilarity (CheckSimilarityRequest) returns (CheckSimilarityResponse);
+}
+
+message CheckSimilarityRequest {
+  bytes target_audio_data = 1;
+  bytes user_audio_data = 2;
+  string language = 3; // optional, default "ko-KR"
+}
+
+message CheckSimilarityResponse {
+  string status = 1; // JSON: {"userId": int, "result": "PASS" or "FAIL", "target_text": string, "user_text": string, "text_score_percent": double, "audio_score_percent": double, "overall_score_percent": double, "error": string or null}
+}

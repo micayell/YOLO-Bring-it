@@ -1,0 +1,22 @@
+[
+  {
+    "member_uid": 1,
+    "name": "Kim Min",
+    "nickname": "Tokki SSAFY",
+    "nickname_modified_at": "2025-07-01T10:00:00",
+    "password": "1234",
+    "intro": "Hello world!",
+    "email": "kmin@example.com",
+    "coin": 1000,
+    "used_coin": 300,
+    "score": 1500,
+    "xp": 1750,
+    "first_win_cnt": 2,
+    "second_win_cnt": 1,
+    "third_win_cnt": 0,
+    "yolo_score": 800,
+    "is_deleted": false,
+    "reg_dt": "2025-06-01T12:00:00",
+    "mod_dt": "2025-07-01T10:00:00"
+  }
+]

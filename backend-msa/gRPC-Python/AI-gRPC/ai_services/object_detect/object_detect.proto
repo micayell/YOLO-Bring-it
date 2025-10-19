@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package object_detect;
+
+service ObjectDetectService {
+  rpc Detect (DetectRequest) returns (DetectResponse);
+}
+
+message DetectRequest {
+  string image_base64 = 1;
+}
+
+message DetectResponse {
+  repeated string detected_objects = 1;
+}

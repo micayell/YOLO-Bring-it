@@ -1,0 +1,115 @@
+server:
+  port: 0
+
+gateway:
+  ip: localhost
+
+spring:
+  application:
+    name: game-service
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+
+  # zipkin
+  zipkin:
+    base-url: http://127.0.0.1:9411
+    enabled: true
+  sleuth:
+    sampler:
+      probability: 1.0
+
+  # Database
+  datasource:
+    url: jdbc:postgresql://localhost:5432/games
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 1234
+
+  # JPA
+  jpa:
+    hibernate:
+      ddl-auto: update
+      use_sql_comments: true
+    show-sql: true
+
+  # redis
+  data:
+    redis:
+      port: 6379
+      host: localhost
+
+  #kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: game-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# jwt
+jwt:
+  secret: dyAeHubOOc8KaOfYB6XEQoEj1QzRlVgtjNL8PYs1A1tymZvvqkcEU7L1imkKHeDa
+  expiration: 1296000000
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka
+
+#livekit
+livekit:
+  api:
+    key: APInBSUFUYhUfdE
+    secret: LmvHoHYIsx4yAV4VuSAHISHAjaLsUeX3nBH6fdKn5ZB
+
+# swagger
+springdoc:
+  swagger-ui:
+    enabled: true
+    display-request-duration: true
+
+# S3/R2
+aws:
+  s3:
+    publicUrl: https://pub-1b87520b13004863b6faad8458f37850.r2.dev
+    endpointUrl: https://893ddb890911cb604dfcb67dbb99057c.r2.cloudflarestorage.com
+    bucket: yolo-bringit
+    region: APAC
+  accessKey: 41fa6efee1a1029b21a8086312e801c1
+  secretKey: 55115f9f5018f9c0d3400c9bee21481d2d12a19e8aaa928f2f9e941372d77f80
+
+app:
+  front:
+    url: http://localhost:63342,http://localhost:3000,https://i13c207.p.ssafy.io,https://www.i13c207.p.ssafy.io,http://192.168.0.62:3000
+
+#gRPC
+grpc:
+  host: localhost
+  port: 50051
+
+swagger:
+  server-url: http://localhost:8080/api/v1/games
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - refresh
+          - health
+          - beans
+          - info
+          - busrefresh

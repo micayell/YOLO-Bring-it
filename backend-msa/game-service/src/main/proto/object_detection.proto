@@ -1,0 +1,15 @@
+syntax = "proto3";
+package object_detect;
+
+service ObjectDetectService {
+  rpc Detect (DetectRequest) returns (DetectResponse);
+}
+
+message DetectRequest {
+  bytes image_data = 1;
+  string target_item = 2;
+}
+
+message DetectResponse {
+  string status = 1;  // JSON: {"type": "object_detection", "result": "PASS", ...}
+}

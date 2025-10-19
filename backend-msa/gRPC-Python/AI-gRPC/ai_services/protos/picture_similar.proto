@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package picture_similar;
+
+service PictureSimilarService {
+  rpc CheckSimilarity (CheckSimilarityRequest) returns (CheckSimilarityResponse);
+}
+
+message CheckSimilarityRequest {
+  string image_base64 = 1;
+  int32 user_id = 2;
+  string target_picture = 3;
+}
+
+message CheckSimilarityResponse {
+  string status = 1; // JSON: {"userId": 123, "result": "PASS", "similarity_percent": "85.50%", "error": null}
+  int32 user_id = 2;
+}

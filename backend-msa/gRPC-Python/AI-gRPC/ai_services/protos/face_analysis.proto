@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package face_analysis;
+
+service FaceAnalysisService {
+  rpc AnalyzeEmotion (AnalyzeEmotionRequest) returns (AnalyzeEmotionResponse);
+}
+
+message AnalyzeEmotionRequest {
+  string image_base64 = 1;
+  int32 user_id = 2;
+  string do_emotion = 3;
+}
+
+message AnalyzeEmotionResponse {
+  string status = 1;
+  int32 user_id = 2;
+}

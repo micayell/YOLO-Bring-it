@@ -1,0 +1,7 @@
+rootProject.name = 'bringit'
+include 'game-service'
+include 'chat-service'
+include 'user-service'
+include 'service-discovery'
+include 'apigateway-service'
+include 'config-service'

@@ -1,0 +1,659 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 14px;
+  --background: #ffffff;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #030213;
+  --primary-foreground: #ffffff;
+  --secondary: #f8fafc;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: transparent;
+  --input-background: #f8fafc;
+  --switch-background: #cbd5e1;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #3b82f6;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #8b5cf6;
+  --radius: 0.625rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #171717;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #3b82f6;
+
+  /* rem 기반 spacing 시스템 */
+  --spacing-xs: 0.25rem;    /* 4px equivalent */
+  --spacing-sm: 0.5rem;     /* 7px equivalent */
+  --spacing-md: 0.75rem;    /* 10.5px equivalent */
+  --spacing-lg: 1rem;       /* 14px equivalent - 기본 */
+  --spacing-xl: 1.25rem;    /* 17.5px equivalent */
+  --spacing-2xl: 1.5rem;    /* 21px equivalent */
+  --spacing-3xl: 2rem;      /* 28px equivalent */
+  --spacing-4xl: 3rem;      /* 42px equivalent */
+  --spacing-5xl: 4rem;      /* 56px equivalent */
+
+  /* rem 기반 컴포넌트 크기 */
+  --touch-target-min: 2.75rem;  /* 44px equivalent - 최소 터치 영역 */
+  --btn-sm: 2rem;               /* 28px - 작은 버튼 */
+  --btn-md: 2.5rem;             /* 35px - 기본 버튼 */
+  --btn-lg: 3rem;               /* 42px - 큰 버튼 */
+  --btn-xl: 3.5rem;             /* 49px - 매우 큰 버튼 */
+
+  /* rem 기반 아이콘 크기 */
+  --icon-xs: 1rem;     /* 14px */
+  --icon-sm: 1.25rem;  /* 17.5px */
+  --icon-md: 1.5rem;   /* 21px */
+  --icon-lg: 2rem;     /* 28px */
+  --icon-xl: 2.5rem;   /* 35px */
+
+  /* rem 기반 캐릭터 크기 (반응형) */
+  --character-xs: 4rem;     /* 56px - iPhone SE */
+  --character-sm: 6rem;      /* 84px - 모바일 */
+  --character-md: 8rem;      /* 112px - 작은 태블릿 */
+  --character-lg: 10rem;     /* 140px - 태블릿 */
+  --character-xl: 13rem;     /* 182px - 작은 데스크톱 */
+  --character-2xl: 16rem;    /* 224px - 데스크톱 */
+  --character-3xl: 20rem;    /* 280px - 대형 데스크톱 */
+
+  /* rem 기반 header 높이 */
+  --header-xs: 3.5rem;   /* 49px - 모바일 */
+  --header-sm: 4rem;     /* 56px - 작은 태블릿 */
+  --header-md: 4.5rem;   /* 63px - 태블릿 */
+  --header-lg: 5rem;     /* 70px - 작은 데스크톱 */
+  --header-xl: 6rem;     /* 84px - 데스크톱 */
+
+  /* 게임 카운트다운 폰트 크기 (rem 기반) */
+  --countdown-xs: 3rem;    /* 42px - 모바일 */
+  --countdown-sm: 4rem;    /* 56px - 작은 태블릿 */
+  --countdown-md: 5rem;    /* 70px - 태블릿 */
+  --countdown-lg: 6rem;    /* 84px - 작은 데스크톱 */
+  --countdown-xl: 8rem;    /* 112px - 데스크톱 */
+  --countdown-2xl: 10rem;  /* 140px - 대형 데스크톱 */
+
+  /* 게임 타이머 폰트 크기 (rem 기반) */
+  --timer-xs: 1.5rem;      /* 21px - 모바일 */
+  --timer-sm: 2rem;        /* 28px - 작은 태블릿 */
+  --timer-md: 2.5rem;      /* 35px - 태블릿 */
+  --timer-lg: 3rem;        /* 42px - 작은 데스크톱 */
+  --timer-xl: 3.5rem;      /* 49px - 데스크톱 */
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #334155;
+  --secondary-foreground: #f1f5f9;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #334155;
+  --accent-foreground: #f1f5f9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  --input: #334155;
+  --ring: #3b82f6;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #8b5cf6;
+  --sidebar: #1e293b;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: #334155;
+  --sidebar-ring: #3b82f6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+/* rem 기반 유틸리티 클래스 */
+@layer utilities {
+  .spacing-xs { gap: var(--spacing-xs); }
+  .spacing-sm { gap: var(--spacing-sm); }
+  .spacing-md { gap: var(--spacing-md); }
+  .spacing-lg { gap: var(--spacing-lg); }
+  .spacing-xl { gap: var(--spacing-xl); }
+  .spacing-2xl { gap: var(--spacing-2xl); }
+  .spacing-3xl { gap: var(--spacing-3xl); }
+  
+  .touch-target {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+  
+  .btn-sm {
+    width: var(--btn-sm);
+    height: var(--btn-sm);
+  }
+  
+  .btn-md {
+    width: var(--btn-md);
+    height: var(--btn-md);
+  }
+  
+  .btn-lg {
+    width: var(--btn-lg);
+    height: var(--btn-lg);
+  }
+  
+  .character-responsive {
+    width: var(--character-xs);
+    height: var(--character-xs);
+  }
+  
+  @media (min-width: 375px) {
+    .character-responsive {
+      width: var(--character-sm);
+      height: var(--character-sm);
+    }
+  }
+  
+  @media (min-width: 640px) {
+    .character-responsive {
+      width: var(--character-md);
+      height: var(--character-md);
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .character-responsive {
+      width: var(--character-lg);
+      height: var(--character-lg);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .character-responsive {
+      width: var(--character-xl);
+      height: var(--character-xl);
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .character-responsive {
+      width: var(--character-2xl);
+      height: var(--character-2xl);
+    }
+  }
+  
+  @media (min-width: 1536px) {
+    .character-responsive {
+      width: var(--character-3xl);
+      height: var(--character-3xl);
+    }
+  }
+
+  /* 게임 카운트다운 폰트 클래스 */
+  .countdown-font {
+    font-family: 'BM_HANNA_TTF:Regular', sans-serif;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--countdown-xs);
+    line-height: 1.1;
+    letter-spacing: 0.05em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+  
+  @media (min-width: 640px) {
+    .countdown-font {
+      font-size: var(--countdown-sm);
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .countdown-font {
+      font-size: var(--countdown-md);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .countdown-font {
+      font-size: var(--countdown-lg);
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .countdown-font {
+      font-size: var(--countdown-xl);
+    }
+  }
+  
+  @media (min-width: 1536px) {
+    .countdown-font {
+      font-size: var(--countdown-2xl);
+    }
+  }
+
+  /* 게임 타이머 폰트 클래스 */
+  .timer-font {
+    font-family: 'BM_HANNA_TTF:Regular', sans-serif;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--timer-xs);
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+  
+  @media (min-width: 640px) {
+    .timer-font {
+      font-size: var(--timer-sm);
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .timer-font {
+      font-size: var(--timer-md);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .timer-font {
+      font-size: var(--timer-lg);
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .timer-font {
+      font-size: var(--timer-xl);
+    }
+  }
+
+  /* 폰트 최적화 클래스 */
+  .font-optimized {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+
+  /* 큰 텍스트 최적화 */
+  .text-large-optimized {
+    font-weight: var(--font-weight-medium);
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+
+  /* 숫자 전용 최적화 */
+  .number-optimized {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'tnum' 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* 부드러운 스크롤 */
+* {
+  scroll-behavior: smooth;
+}
+
+/* 포커스 링 개선 (접근성) */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* 웹폰트 로딩 최적화 */
+@font-face {
+  font-family: 'BM_HANNA_TTF:Regular';
+  font-display: swap;
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Bungee_Shade:Regular';
+  font-display: swap;
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* 게임 관련 폰트 최적화 */
+.game-text {
+  font-family: 'BM_HANNA_TTF:Regular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: var(--font-weight-medium);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.game-title {
+  font-family: 'Bungee_Shade:Regular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 카운트다운 특수 스타일 */
+.countdown-glow {
+  text-shadow: 
+    0 0 10px currentColor,
+    0 0 20px currentColor,
+    0 0 30px currentColor;
+}
+
+.countdown-pulse {
+  animation: countdown-pulse 1s ease-in-out infinite;
+}
+
+@keyframes countdown-pulse {
+  0% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: scale(1.05); 
+    opacity: 0.8; 
+  }
+  100% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+}
+
+/* 게임 완료 후 텍스트 최적화 */
+.result-text {
+  font-family: 'BM_HANNA_TTF:Regular', sans-serif;
+  font-weight: var(--font-weight-medium);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 640px) {
+  .game-text {
+    font-size: 0.875rem;
+    line-height: 1.3;
+  }
+  
+  .countdown-font {
+    font-size: var(--countdown-xs);
+    line-height: 1.0;
+  }
+  
+  .timer-font {
+    font-size: var(--timer-xs);
+    line-height: 1.1;
+  }
+}
+
+/* iPhone SE 전용 최적화 (320px 이하) */
+@media (max-width: 320px) {
+  .game-text {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+  
+  .countdown-font {
+    font-size: 2.5rem;
+    line-height: 0.9;
+  }
+  
+  .timer-font {
+    font-size: 1.25rem;
+    line-height: 1.0;
+  }
+  
+  /* 더 작은 패딩과 마진 */
+  .p-3 { padding: 0.5rem; }
+  .p-4 { padding: 0.75rem; }
+  .m-2 { margin: 0.25rem; }
+  .m-4 { margin: 0.5rem; }
+  
+  /* 더 작은 버튼 크기 */
+  .btn-md {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .btn-lg {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  /* iPhone SE 전용 캐릭터 크기 */
+  .character-responsive {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+/* 고해상도 디스플레이 최적화 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .game-text,
+  .countdown-font,
+  .timer-font {
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+}
+
+/* 접근성 - 사용자가 애니메이션을 비활성화한 경우 */
+@media (prefers-reduced-motion: reduce) {
+  .countdown-pulse {
+    animation: none;
+  }
+}
+
+/* iPhone SE 전용 유틸리티 클래스 */
+.iphone-se-optimized {
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.iphone-se-compact {
+  padding: 0.5rem;
+  margin: 0.25rem;
+}
+
+.iphone-se-touch {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+}
+
+/* 캐릭터 크기 유틸리티 클래스 */
+.character-xs {
+  width: var(--character-xs);
+  height: var(--character-xs);
+}
+
+.character-sm {
+  width: var(--character-sm);
+  height: var(--character-sm);
+}
+
+.character-md {
+  width: var(--character-md);
+  height: var(--character-md);
+}
+
+.character-lg {
+  width: var(--character-lg);
+  height: var(--character-lg);
+}
+
+.character-xl {
+  width: var(--character-xl);
+  height: var(--character-xl);
+}
+
+.character-2xl {
+  width: var(--character-2xl);
+  height: var(--character-2xl);
+}
+
+.character-3xl {
+  width: var(--character-3xl);
+  height: var(--character-3xl);
+}
+
+/* 반응형 캐릭터 크기 클래스 */
+.character-mobile {
+  width: clamp(3rem, 15vw, 6rem);
+  height: clamp(3rem, 15vw, 6rem);
+}
+
+.character-tablet {
+  width: clamp(6rem, 20vw, 10rem);
+  height: clamp(6rem, 20vw, 10rem);
+}
+
+.character-desktop {
+  width: clamp(10rem, 25vw, 16rem);
+  height: clamp(10rem, 25vw, 16rem);
+}
