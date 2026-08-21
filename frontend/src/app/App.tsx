@@ -1,18 +1,18 @@
 // import { motion, AnimatePresence } from "framer-motion";
-// import { LoginForm } from "@/pages/LoginForm";
-// import { RegisterForm } from "@/pages/RegisterForm";
-// import { ForgotPasswordForm } from "@/pages/ForgotPasswordForm";
-// import { LobbyScreen } from "@/pages/LobbyScreen";
-// import { GameJoinScreen } from "@/pages/GameJoinScreen";
+// import { LoginForm } from "@/domains/user/components/auth/LoginForm";
+// import { RegisterForm } from "@/domains/user/components/auth/RegisterForm";
+// import { ForgotPasswordForm } from "@/domains/user/components/auth/ForgotPasswordForm";
+// import { LobbyScreen } from "@/domains/game/components/lobby/LobbyView";
+// import { GameJoinScreen } from "@/domains/game/components/game/GameJoinScreen";
 // import { GameWaitingRoom } from "@/pages/GameWaitingRoom";
-// import { GameScreen } from "@/pages/GameScreen";
-// import { RoundResultScreen } from "@/pages/RoundResultScreen";
-// import { FinalResultScreen } from "@/pages/FinalResultScreen";
+// import { GameScreen } from "@/domains/game/components/game/GameScreen";
+// import { RoundResultScreen } from "@/domains/game/components/result/RoundResultScreen";
+// import { FinalResultScreen } from "@/domains/game/components/result/FinalResultScreen";
 // import { LandingPage } from "@/pages/LandingPage";
 // import { ThemeProvider } from "@/shared/lib/ThemeContext";
-// import { useGameLogic } from "@/shared/hooks/useGameLogic";
+// import { useGameLogic } from "@/domains/game/hooks/useGameLogic";
 // import { useTokenRefresher } from "../hooks/useTokenRefresher.ts"; // 토큰 재발급용 훅
-// import { ChatModalWrapper } from "@/components/chats/ChatModalWrapper";
+// import { ChatModalWrapper } from "@/domains/chat/components/chats/ChatModalWrapper";
 
 // export type { GameData, Player, RoundResult, PlayerRanking } from "@/shared/types/game";
 
@@ -181,35 +181,35 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
-import { LoginForm } from "@/pages/LoginForm";
-import { RegisterForm } from "@/pages/RegisterForm";
-import { LobbyScreen } from "@/pages/LobbyScreen";
-import { GameJoinScreen } from "@/pages/GameJoinScreen";
-import { GameScreen } from "@/pages/GameScreen";
-import { RoundResultScreen } from "@/pages/RoundResultScreen";
-import { FinalResultScreen } from "@/pages/FinalResultScreen";
+import { LoginForm } from "@/domains/user/components/auth/LoginForm";
+import { RegisterForm } from "@/domains/user/components/auth/RegisterForm";
+import { LobbyScreen } from "@/domains/game/components/lobby/LobbyView";
+import { GameJoinScreen } from "@/domains/game/components/game/GameJoinScreen";
+import { GameScreen } from "@/domains/game/components/game/GameScreen";
+import { RoundResultScreen } from "@/domains/game/components/result/RoundResultScreen";
+import { FinalResultScreen } from "@/domains/game/components/result/FinalResultScreen";
 import { LandingPage } from "@/pages/LandingPage";
 import { ThemeProvider } from "@/shared/lib/ThemeContext";
-import { ChatModalWrapper } from "@/components/chats/ChatModalWrapper";
-import { GameLogicProvider, useGame } from "@/shared/hooks/gameLogicContext";
-import { ForgotPasswordForm } from "@/pages/ForgotPasswordForm";
-import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
-import { useUserWebSocket } from "@/shared/hooks/useUserWebSocket";
-import { QuickMatchWaitingRoom } from "@/pages/QuickMatchWaitingRoom";
-import { CustomGameWaitingRoom } from "@/pages/CustomGameWaitingRoom";
+import { ChatModalWrapper } from "@/domains/chat/components/chats/ChatModalWrapper";
+import { GameLogicProvider, useGame } from "@/domains/game/hooks/gameLogicContext";
+import { ForgotPasswordForm } from "@/domains/user/components/auth/ForgotPasswordForm";
+import { ResetPasswordPage } from "@/domains/user/components/auth/ResetPasswordPage";
+import { useUserWebSocket } from "@/domains/user/hooks/useUserWebSocket";
+import { QuickMatchWaitingRoom } from "@/domains/game/components/room/QuickMatchWaitingRoom";
+import { CustomGameWaitingRoom } from "@/domains/game/components/room/CustomGameWaitingRoom";
 import { InvitationModal } from "@/shared/ui/InvitationModal"; // 1. 초대 모달 import
-import { useGlobalWebSocket } from "@/shared/hooks/useGlobalWebSocket"; // 전역 웹소켓 훅
+import { useGlobalWebSocket } from "@/app/hooks/useGlobalWebSocket"; // 전역 웹소켓 훅
 
 export type { GameData, Player, RoundResult, PlayerRanking } from "@/shared/types/game";
 import type { Player } from "@/shared/types/game";
 
 // 게임 디자인 수정을 위한 개별 라우터 설정
-// import { BringIt } from "@/components/game/games"
-// import { ColorKiller } from "@/components/game/games"
-// import { FaceIt } from "@/components/game/games";
-// import { ShowMeTheArt } from "@/components/game/games";
-// import { TheFastestFinger } from "@/components/game/games";
-import { VoiceCrack } from "@/components/game/games/VoiceCrack"; // 경로 맞게 조정
+// import { BringIt } from "@/domains/game/components/game/games"
+// import { ColorKiller } from "@/domains/game/components/game/games"
+// import { FaceIt } from "@/domains/game/components/game/games";
+// import { ShowMeTheArt } from "@/domains/game/components/game/games";
+// import { TheFastestFinger } from "@/domains/game/components/game/games";
+import { VoiceCrack } from "@/domains/game/components/game/games/VoiceCrack"; // 경로 맞게 조정
 
 
 import { useState, useEffect } from 'react'

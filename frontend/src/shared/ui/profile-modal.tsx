@@ -3,7 +3,7 @@ import { LogOut, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-import { useUserLoginStore } from "../../app/stores/userStore";
+import { useUserLoginStore } from "@/domains/user/stores/userStore";
 import { EditProfileModal } from "./edit-profile-modal"; // ⭐ 회원정보 수정 모달
 
 interface ProfileModalProps {

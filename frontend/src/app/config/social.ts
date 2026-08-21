@@ -1,4 +1,4 @@
-import { SocialLoginConfig } from '../types/auth';
+import { SocialLoginConfig } from '@/shared/types/auth';
 
 export const SOCIAL_LOGIN_CONFIG: SocialLoginConfig = {
   kakao: {

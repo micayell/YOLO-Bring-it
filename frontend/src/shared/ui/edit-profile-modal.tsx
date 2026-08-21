@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import axios from "axios";
 
 // ✅ Zustand 스토어
-import { useUserLoginStore } from "../../app/stores/userStore";
+import { useUserLoginStore } from "@/domains/user/stores/userStore";
 
 interface EditProfileModalProps {
   open: boolean;

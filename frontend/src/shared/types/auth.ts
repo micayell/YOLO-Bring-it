@@ -30,6 +30,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string;
+  nickname: string;
+  intro?: string;
 }
 
 export interface RefreshTokenRequest {

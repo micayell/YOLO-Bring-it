@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useWebSocketStore } from '@/app/stores/websocketStore'; // 변경된 스토어 import
-import { useUserLoginStore } from "@/app/stores/userStore";
+import { useUserLoginStore } from "@/domains/user/stores/userStore";
 import apiClient from "@/shared/services/api";
 import { Button } from "./button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./dialog";

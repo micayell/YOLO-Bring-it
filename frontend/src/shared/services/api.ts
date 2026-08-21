@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
-import { useUserLoginStore } from '@/app/stores/userStore';
-import { authService } from '@/shared/services/authService'; // ✅ authService import
+import { useUserLoginStore } from '@/domains/user/stores/userStore';
+import { authService } from '@/domains/user/services/authService'; // ✅ authService import
 
 const API_BASE_URL = 'https://i13c207.p.ssafy.io/api/v1';
 

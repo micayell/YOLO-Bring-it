@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { LandingPageImage } from "@/widgets/LandingPageImage";
+import { LandingPageImage } from "@/domains/game/components/LandingPageImage";
 
 interface LandingPageProps {
   isLoggedIn: boolean;
