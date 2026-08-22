@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -23,16 +24,16 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@Order(Ordered.HIGHEST_PRECEDENCE + 99) // 인터셉터의 우선순의를 최상위로 설정
+@Order(Ordered.HIGHEST_PRECEDENCE + 99) // 인터셉터의 우선순위를 최상위로 설정
 public class StompHandler implements ChannelInterceptor {
-    @Value("${token.secret}")
+    @Value("${jwt.secret}")
     private String key;
 
     private final TokenProvider tokenProvider;
     private final OnlineMemberService onlineMemberService;
 
     @Override
-    public Message<?> preSend(Message<?> message, MessageChannel channel) {
+    public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
         final StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
         if (StompCommand.CONNECT == accessor.getCommand()) {
@@ -70,7 +71,7 @@ public class StompHandler implements ChannelInterceptor {
             Number memberUidNum = claims.get("memberUid", Number.class);
             return memberUidNum.longValue();
         } catch (Exception e) {
-            log.error("JWT 파싱 중 오류 발생: {}", e.getMessage());
+            log.error("JWT 파싱 오류 발생: {}", e.getMessage());
             return null;
         }
     }

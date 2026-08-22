@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class TokenProvider {
-    @Value("${token.secret}")
+    @Value("${jwt.secret}")
     private String key;
     private static final String AUTHORITIES_KEY = "auth";
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L; // 60분
@@ -95,7 +95,8 @@ public class TokenProvider {
 
         long now = (new Date()).getTime();
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
-        String accessToken = Jwts.builder()
+        
+        return Jwts.builder()
                 .signWith(SignatureAlgorithm.HS512, key)
                 .setSubject(member.getEmail())
                 .claim("memberUid", member.getMemberUid())
@@ -104,7 +105,6 @@ public class TokenProvider {
                 .setIssuedAt(new Date())
                 .setExpiration(accessTokenExpiresIn)
                 .compact();
-        return accessToken;
     }
 
     public String validateAndGetEmail(String token) {
@@ -122,12 +122,7 @@ public class TokenProvider {
             long expirationTimeMillis = claims.getExpiration().getTime();
             long currentTimeMillis = System.currentTimeMillis();
 
-            if (expirationTimeMillis < currentTimeMillis) {
-                // token is expired
-                return false;
-            }
-
-            return true;
+            return expirationTimeMillis >= currentTimeMillis;
         } catch (Exception e) {
             log.debug("validateToken error");
         }
