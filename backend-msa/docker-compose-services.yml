@@ -1,0 +1,80 @@
+version: "3.8"
+
+services:
+  service-discovery:
+    build: 
+      context: ./service-discovery
+      dockerfile: Dockerfile
+    container_name: service-discovery
+    ports:
+      - "8761:8761"
+    restart: unless-stopped
+    networks:
+      - bringit-network
+
+  config-service:
+    build: 
+      context: ./config-service
+      dockerfile: Dockerfile
+    container_name: config-service
+    ports:
+      - "8888:8888"
+    depends_on:
+      - service-discovery
+    restart: unless-stopped
+    networks:
+      - bringit-network
+
+  apigateway-service:
+    build:
+      context: ./apigateway-service
+      dockerfile: Dockerfile
+    container_name: apigateway-service
+    ports:
+      - "8080:8080" # API Gateway
+    depends_on:
+      - service-discovery
+      - config-service
+    restart: unless-stopped
+    networks:
+      - bringit-network
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    depends_on:
+      - service-discovery
+      - config-service
+    restart: unless-stopped
+    networks:
+      - bringit-network
+
+  game-service:
+    build:
+      context: ./game-service
+      dockerfile: Dockerfile
+    container_name: game-service
+    depends_on:
+      - service-discovery
+      - config-service
+    restart: unless-stopped
+    networks:
+      - bringit-network
+
+  chat-service:
+    build:
+      context: ./chat-service
+      dockerfile: Dockerfile
+    container_name: chat-service
+    depends_on:
+      - service-discovery
+      - config-service
+    restart: unless-stopped
+    networks:
+      - bringit-network
+
+networks:
+  bringit-network:
+    external: true
