@@ -13,13 +13,10 @@ spring:
   cloud:
     config:
       server:
-        native:
-          search-locations: file:///Users/chaejinlim/Projects/ssafy/new/git-local-repo
-        git: #default
-          uri: https://lab.ssafy.com/if-else/yolo-bring-it-config.git
+        git:
+          uri: https://github.com/micayell/YOLO-Bring-it.git
           default-label: master
-          username: icj0103
-          password: 8Wv2BFmA8PVVeMy66F7y
+          search-paths: backend-msa/config-repo
 
 management:
   endpoints:
