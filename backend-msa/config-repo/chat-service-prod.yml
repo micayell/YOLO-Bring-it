@@ -1,0 +1,66 @@
+server:
+  port: 0
+
+gateway:
+  ip: localhost
+
+spring:
+  application:
+    name: chat-service
+
+  # Database
+  datasource:
+    url: jdbc:postgresql://localhost:5432/chats
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 1234
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      use_sql_comments: true
+    show-sql: true
+
+  # rabbitMQ
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+app:
+  front:
+    url: http://localhost:63342,http://localhost:3000,https://i13c207.p.ssafy.io,https://www.i13c207.p.ssafy.io
+
+jwt:
+  secret: jA+YxXxRUvN+uE0V3zYmWg4kaSFO5XT+ANeOE93Eeb7Inw9BQ4QLQZgqZjC/qEygdz9WejAjNs80zyPvjh+7tA==
+  expiration: 1296000000
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    display-request-duration: true
+
+swagger:
+  server-url: http://localhost:8080/api/v1/chats
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - refresh
+          - health
+          - beans
+          - info
+          - busrefresh

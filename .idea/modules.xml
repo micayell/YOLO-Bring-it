@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/YOLO-Bring-it.iml" filepath="$PROJECT_DIR$/.idea/YOLO-Bring-it.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/apigateway-service/bringit.apigateway-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/apigateway-service/bringit.apigateway-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/chat-service/bringit.chat-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/chat-service/bringit.chat-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/game-service/bringit.game-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/game-service/bringit.game-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/user-service/bringit.user-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/user-service/bringit.user-service.main.iml" />
+    </modules>
+  </component>
+</project>

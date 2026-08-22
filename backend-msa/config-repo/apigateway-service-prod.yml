@@ -1,0 +1,293 @@
+server:
+  port: 8080
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+spring:
+  application:
+    name: apigateway-service
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+  # redis -> user-service redis와 동기화되어야 함
+  data:
+    redis:
+      port: 6379
+      host: localhost
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service-register
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/users
+                - Method=POST
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+
+            - id: user-service-controller
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/users/**
+                - Method=POST, PUT, PATCH, GET
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+                - AuthorizationHeaderFilter
+            - id: user-service-login
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/tokens/login
+                - Method=POST
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+            - id: user-service-login22
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/friends/**
+                - Method=POST, GET
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+                - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+            - id: user-service-logout
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/tokens/logout
+                - Method=POST
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+                - AuthorizationHeaderFilter
+            - id: user-service-tokens
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/tokens/**
+                - Method=GET, POST
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+                - name: LoggingFilter
+                  args:
+                    preLogger: true
+                    postLogger: true
+
+            - id: user-service-item-members
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/item-members/**
+                - Method=GET,POST,PATCH
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /${segment}
+                - AuthorizationHeaderFilter
+
+            - id: user-service-swagger1
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/swagger-ui/**
+                - Method=GET
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+            - id: user-service-swagger2
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/v3/api-docs/**
+                - Method=GET
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+            - id: user-service-websocket
+              uri: lb:ws://USER-SERVICE
+              predicates:
+                - Path=/ws-user/**
+              filters:
+                - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+            - id: game-service-swagger1
+              uri: lb://GAME-SERVICE
+              predicates:
+                - Path=/api/v1/games/swagger-ui/**
+                - Method=GET
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/games/(?<segment>.*), /$\{segment}
+            - id: game-service-swagger2
+              uri: lb://GAME-SERVICE
+              predicates:
+                - Path=/api/v1/games/v3/api-docs/**
+                - Method=GET
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/games/(?<segment>.*), /$\{segment}
+
+            - id: game-service
+              uri: lb://GAME-SERVICE
+              predicates:
+                - Path=/api/v1/games/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/games/(?<segment>.*), /$\{segment}
+                - name: LoggingFilter
+                  args:
+                    preLogger: true
+                    postLogger: true
+                - AuthorizationHeaderFilter
+
+            - id: game-service22
+              uri: lb://GAME-SERVICE
+              predicates:
+                - Path=/api/v1/games/rooms/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/games/(?<segment>.*), /$\{segment}
+                - name: LoggingFilter
+                  args:
+                    preLogger: true
+                    postLogger: true
+                - AuthorizationHeaderFilter
+
+            - id: game-service3
+              uri: lb://GAME-SERVICE
+              predicates:
+                - Path=/api/v1/games/users/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/games/(?<segment>.*), /$\{segment}
+                - name: LoggingFilter
+                  args:
+                    preLogger: true
+                    postLogger: true
+                - AuthorizationHeaderFilter
+
+            - id: game-service4
+              uri: lb://GAME-SERVICE
+              predicates:
+                - Path=/api/v1/games/in-game-scores/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/games/(?<segment>.*), /$\{segment}
+                - name: LoggingFilter
+                  args:
+                    preLogger: true
+                    postLogger: true
+                - AuthorizationHeaderFilter
+
+            - id: game-service5
+              uri: lb://GAME-SERVICE
+              predicates:
+                - Path=/api/v1/games/in-game-rounds/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/games/(?<segment>.*), /$\{segment}
+                - name: LoggingFilter
+                  args:
+                    preLogger: true
+                    postLogger: true
+
+            - id: game-service-websocket
+              uri: lb:ws://GAME-SERVICE
+              predicates:
+                - Path=/ws-game/**
+              filters:
+                - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+
+            - id: user-service-actuator
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/actuator/**
+                - Method=GET,POST
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+                - name: LoggingFilter
+                  args:
+                    preLogger: true
+                    postLogger: true
+            - id: user-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/**
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/users/(?<segment>.*), /$\{segment}
+                - name: LoggingFilter
+                  args:
+                    preLogger: true
+                    postLogger: true
+                - AuthorizationHeaderFilter
+
+            - id: chat-service-swagger1
+              uri: lb://CHAT-SERVICE
+              predicates:
+                - Path=/api/v1/chats/swagger-ui/**
+                - Method=GET
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/chats/(?<segment>.*), /$\{segment}
+            - id: chat-service-swagger2
+              uri: lb://CHAT-SERVICE
+              predicates:
+                - Path=/api/v1/chats/v3/api-docs/**
+                - Method=GET
+              filters:
+                - RemoveRequestHeader=Cookie
+                - RewritePath=/api/v1/chats/(?<segment>.*), /$\{segment}
+            - id: chat-service
+              uri: lb://CHAT-SERVICE
+              predicates:
+                - Path=/api/v1/chats/chats/**
+              filters:
+                - name: LoggingFilter
+                  args:
+                    preLogger: true
+                    postLogger: true
+                - AuthorizationHeaderFilter
+                - RewritePath=/api/v1/chats/(?<segment>.*), /$\{segment}
+            - id: chat-service-websocket
+              uri: lb:ws://CHAT-SERVICE
+              predicates:
+                - Path=/ws-chat/**
+              filters:
+                - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+app:
+  front:
+    url: https://i13c207.p.ssafy.io,https://www.i13c207.p.ssafy.io,http://localhost:3000,http://localhost:63342,http://192.168.0.62:3000
+
+springdoc:
+  swagger-ui:
+    urls[0]:
+      name: user-service
+      url: /api/v1/users/v3/api-docs
+    urls[1]:
+      name: game-service
+      url: /api/v1/games/v3/api-docs
+    urls[2]:
+      name: chat-service
+      url: /api/v1/chats/v3/api-docs
+    use-root-path: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - refresh
+          - health
+          - beans
+          - info
+          - httpexchanges
+          - busrefresh
