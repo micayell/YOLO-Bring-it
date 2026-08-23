@@ -7,4 +7,6 @@ public interface OnlineMemberService {
     void mapSessionToMember(String sessionId, Long memberId);
     Long getMemberIdBySessionId(String sessionId);
     void removeSession(String sessionId);
+
+    boolean hasActiveSessions(Long memberId);
 }

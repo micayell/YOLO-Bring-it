@@ -34,6 +34,11 @@ public class FriendServiceImpl implements FriendService {
                     throw new IllegalStateException("이미 친구 요청을 보냈습니다.");
                 });
 
+        friendRepository.findBySenderAndReceiverAndSenderIsDeletedFalseAndReceiverIsDeletedFalse(receiver, sender)
+                .ifPresent(f -> {
+                    throw new IllegalStateException("이미 친구 요청을 보냈습니다.");
+                });
+
         Friend friend = Friend.builder()
                 .sender(sender)
                 .receiver(receiver)
