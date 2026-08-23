@@ -9,3 +9,9 @@ node_modules/
 # Mac/Windows
 .DS_Store
 Thumbs.db
+
+# Python / gRPC Cache
+__pycache__/
+*_pb2.py
+*_pb2_grpc.py
+*.pyc

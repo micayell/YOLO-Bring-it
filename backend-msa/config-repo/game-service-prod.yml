@@ -57,7 +57,7 @@ spring:
 
 # jwt
 jwt:
-  secret: dyAeHubOOc8KaOfYB6XEQoEj1QzRlVgtjNL8PYs1A1tymZvvqkcEU7L1imkKHeDa
+  secret: jA+YxXxRUvN+uE0V3zYmWg4kaSFO5XT+ANeOE93Eeb7Inw9BQ4QLQZgqZjC/qEygdz9WejAjNs80zyPvjh+7tA==
   expiration: 1296000000
 
 eureka:
@@ -72,8 +72,8 @@ eureka:
 #livekit
 livekit:
   api:
-    key: APInBSUFUYhUfdE
-    secret: LmvHoHYIsx4yAV4VuSAHISHAjaLsUeX3nBH6fdKn5ZB
+    key: APIeK6sCHtjbGY6
+    secret: rws1l2nPHK2ZVfWnUBY6eSfq5RiZgd35sbPWlkjgnISA
 
 # swagger
 springdoc:

@@ -36,7 +36,7 @@ const initialState = {
   isConnected: false,
   error: null,
   // LiveKit Cloud WebSocket 주소
-  livekitUrl: 'wss://yolo-bring-it-m8gn7i58.livekit.cloud',
+  livekitUrl: 'wss://yolo-bring-it-vyk7rl8c.livekit.cloud',
   token: null,
 };
 
