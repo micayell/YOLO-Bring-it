@@ -2,13 +2,14 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { useUserLoginStore } from '@/domains/user/stores/userStore';
+import { WS_BASE_URL } from '@/shared/services/api';
 
 interface ChatSocketConfig {
   onChatMessage?: (data: any) => void;
   onError?: (error: any) => void;
 }
 
-const CHAT_SOCKET_URL = 'https://i13c207.p.ssafy.io/ws-chat';
+const CHAT_SOCKET_URL = `${WS_BASE_URL}/ws-chat`;
 const log = (...args: any[]) => console.log(`[ChatSocket]`, ...args);
 const err = (...args: any[]) => console.error(`[ChatSocket] ❌`, ...args);
 
@@ -44,7 +45,7 @@ export const useChatWebSocket = (config: ChatSocketConfig) => {
         connectHeaders: {
           Authorization: `Bearer ${userData.accessToken}`,
         },
-        debug: (msg) => console.log('📢 [ChatSocket] STOMP:', msg),
+        debug: (msg) => console.log('📣 [ChatSocket] STOMP:', msg),
         reconnectDelay: 10000,
         onConnect: () => {
           log('✅ 연결 성공');

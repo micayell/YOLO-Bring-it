@@ -3,6 +3,7 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { useUserLoginStore } from '@/domains/user/stores/userStore';
 import { useWebSocketStore } from '@/app/stores/websocketStore';
+import { WS_BASE_URL } from '@/shared/services/api';
 
 export const useGlobalWebSocket = () => {
   const { userData } = useUserLoginStore();
@@ -16,14 +17,14 @@ export const useGlobalWebSocket = () => {
         return;
       }
 
-      console.log('📢 [GlobalSocket] 연결 시도...');
+      console.log('📣 [GlobalSocket] 연결 시도...');
 
       const newClient = new Client({
-        webSocketFactory: () => new SockJS('https://i13c207.p.ssafy.io/ws-game'),
+        webSocketFactory: () => new SockJS(`${WS_BASE_URL}/ws-game`),
         connectHeaders: {
           Authorization: `Bearer ${userData.accessToken}`,
         },
-        debug: (msg) => console.log('📢 [GlobalSocket] STOMP Debug:', msg),
+        debug: (msg) => console.log('📣 [GlobalSocket] STOMP Debug:', msg),
         reconnectDelay: 5000,
         heartbeatIncoming: 10000,
         heartbeatOutgoing: 10000,

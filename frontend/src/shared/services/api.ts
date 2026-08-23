@@ -2,7 +2,13 @@ import axios, { AxiosError } from 'axios';
 import { useUserLoginStore } from '@/domains/user/stores/userStore';
 import { authService } from '@/domains/user/services/authService'; // ✅ authService import
 
-const API_BASE_URL = 'https://i13c207.p.ssafy.io/api/v1';
+// 환경에 따라 API BASE URL 분기 처리
+// 개발(DEV)일 때는 localhost, 빌드 시(production)에는 운영 서버 URL 사용
+// .env 파일에 환경변수가 세팅되어 있다면 우선적으로 사용합니다.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8080/api/v1' : 'https://i13c207.p.ssafy.io/api/v1');
+
+// WebSocket 연결을 위한 Base URL (WebSocket은 /api/v1 제외)
+export const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8080' : 'https://i13c207.p.ssafy.io');
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -45,14 +51,10 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         } else {
           // 토큰 재발급 실패 시 (refreshTokenForAuth 내부에서 로그아웃 처리됨)
-          // 로그인 페이지로 리디렉션 또는 다른 처리
-          // window.location.href = '/'; 
           return Promise.reject(new Error("토큰 재발급 실패 후 요청 중단"));
         }
 
       } catch (reissueError) {
-        // 이 catch 블록은 refreshTokenForAuth 내부에서 처리되므로,
-        // 실제로는 거의 도달하지 않지만 안전장치로 남겨둡니다.
         console.error('🔴 토큰 재발급 프로세스 중 심각한 오류 발생.', reissueError);
         return Promise.reject(reissueError);
       }
@@ -61,6 +63,5 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 
 export default apiClient;

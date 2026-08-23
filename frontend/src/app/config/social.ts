@@ -1,14 +1,15 @@
 import { SocialLoginConfig } from '@/shared/types/auth';
+import { API_BASE_URL } from '@/shared/services/api';
 
 export const SOCIAL_LOGIN_CONFIG: SocialLoginConfig = {
   kakao: {
-    clientId: process.env.REACT_APP_KAKAO_CLIENT_ID || 'your-kakao-client-id',
-    redirectUri: process.env.REACT_APP_KAKAO_REDIRECT_URI || 'http://localhost:3000/auth/kakao/callback',
+    clientId: import.meta.env.VITE_KAKAO_CLIENT_ID || 'your-kakao-client-id',
+    redirectUri: import.meta.env.VITE_KAKAO_REDIRECT_URI || (import.meta.env.DEV ? 'http://localhost:3000/auth/kakao/callback' : 'https://i13c207.p.ssafy.io/auth/kakao/callback'),
     scope: 'profile_nickname,profile_image,account_email',
   },
   google: {
-    clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID || 'your-google-client-id',
-    redirectUri: process.env.REACT_APP_GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback',
+    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your-google-client-id',
+    redirectUri: import.meta.env.VITE_GOOGLE_REDIRECT_URI || (import.meta.env.DEV ? 'http://localhost:3000/auth/google/callback' : 'https://i13c207.p.ssafy.io/auth/google/callback'),
     scope: 'email profile',
   },
 };
@@ -61,4 +62,4 @@ export const getSocialLoginErrorMessage = (error: string): string => {
     default:
       return '소셜 로그인 중 오류가 발생했습니다.';
   }
-}; 
+};

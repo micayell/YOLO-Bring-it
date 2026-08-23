@@ -1,12 +1,13 @@
 import axios from 'axios';
 import { authService } from '@/domains/user/services/authService';
 import { useUserLoginStore } from '@/domains/user/stores/userStore';
+import { API_BASE_URL } from '@/shared/services/api';
 
 class LiveKitService {
   private baseURL: string;
   private isDev: boolean;
 
-  constructor(baseURL: string = 'https://i13c207.p.ssafy.io/api/v1/games') {
+  constructor(baseURL: string = `${API_BASE_URL}/games`) {
     this.baseURL = baseURL;
     // 개발환경에서도 실제 백엔드 API 사용하도록 변경
     this.isDev = false; // typeof window !== 'undefined' && window.location.hostname === 'localhost';

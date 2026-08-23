@@ -3,11 +3,11 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { useUserLoginStore } from '@/domains/user/stores/userStore';
 import { useFriendStore } from '@/domains/user/stores/friendStore';
-import apiClient from '@/shared/services/api'; // apiClient import
+import apiClient, { WS_BASE_URL } from '@/shared/services/api'; // apiClient import
 import { toast } from 'sonner';
 
 // user-service의 웹소켓 엔드포인트
-const USER_SOCKET_URL = 'https://i13c207.p.ssafy.io/ws-user';
+const USER_SOCKET_URL = `${WS_BASE_URL}/ws-user`;
 
 export const useUserWebSocket = () => {
   const { userData } = useUserLoginStore();
@@ -47,7 +47,7 @@ export const useUserWebSocket = () => {
           connectHeaders: {
             Authorization: `Bearer ${freshUserData.accessToken}`, // 최신 토큰 사용
           },
-          debug: (msg) => console.log('📢 [FriendSocket] STOMP Debug:', msg),
+          debug: (msg) => console.log('📣 [FriendSocket] STOMP Debug:', msg),
           reconnectDelay: 5000,
           onConnect: () => {
             console.log('✅ [UserSocket] user-service 웹소켓 연결 성공');
