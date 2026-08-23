@@ -15,7 +15,7 @@ import java.security.Key;
 @Component
 public class TokenProvider {
 
-    @Value("${token.secret}")
+    @Value("${jwt.secret}")
     private String secret;
 
     private Key key;
@@ -42,7 +42,7 @@ public class TokenProvider {
             String token = normalize(rawToken);
             Jwts.parserBuilder()
                     .setSigningKey(key)
-                    .setAllowedClockSkewSeconds(60) // 시계 오차 허용
+                    .setAllowedClockSkewSeconds(60) // ?�계 ?�차 ?�용
                     .build()
                     .parseClaimsJws(token);
             return true;
@@ -65,7 +65,7 @@ public class TokenProvider {
         if (id == null) id = claims.get("id");
         if (id != null) return String.valueOf(id);
 
-        // 없으면 sub(subject) 사용 (email 등)
+        // ?�으�?sub(subject) ?�용 (email ??
         return claims.getSubject();
     }
 
@@ -83,3 +83,4 @@ public class TokenProvider {
         }
     }
 }
+

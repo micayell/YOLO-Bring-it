@@ -56,11 +56,12 @@ public class MemberController {
         try {
             memberService.signUp(request);
             return responseHandler.success(HttpStatus.CREATED);
-        } catch (IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return responseHandler.fail(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             log.error("signUp error", e);
-            return responseHandler.fail("회원가입 처리 실패", HttpStatus.INTERNAL_SERVER_ERROR);
+            // ✅ 모든 종류의 에러 원인을 메시지로 반환하여 프론트에서 원인을 확인할 수 있도록 임시 수정
+            return responseHandler.fail("서버 에러 원인: " + e.getMessage() + " / " + e.getClass().getSimpleName(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

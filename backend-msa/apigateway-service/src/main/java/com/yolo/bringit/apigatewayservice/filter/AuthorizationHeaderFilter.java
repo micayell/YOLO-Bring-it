@@ -44,7 +44,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
 
-            // 웹소켓 관련 경로는 Authorization 헤더 사용 불가
+            // ?�소�?관??경로??Authorization ?�더 ?�용 불�?
             String path = exchange.getRequest().getURI().getPath();
             if (WHITE_LIST.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) {
                 log.info("AuthorizationHeaderFilter Skipped (white list): {}", path);
@@ -86,7 +86,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     private String getMemberUidFromJwt(String jwt) {
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(env.getProperty("token.secret"))
+                    .setSigningKey(env.getProperty("jwt.secret"))
                     .build()
                     .parseClaimsJws(jwt)
                     .getBody();
@@ -94,7 +94,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             return claims.get("memberUid").toString();
 
         } catch (Exception e) {
-            log.error("JWT 파싱 중 오류 발생: {}", e.getMessage());
+            log.error("JWT ?�싱 �??�류 발생: {}", e.getMessage());
             return null;
         }
     }
@@ -108,10 +108,10 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     }
 
     private boolean isJwtValid(String jwt) {
-        String secret = env.getProperty("token.secret");
+        String secret = env.getProperty("jwt.secret");
 
         if (secret == null || secret.isEmpty()) {
-            log.error("token.secret 값이 설정되지 않았습니다.");
+            log.error("jwt.secret 값이 ?�정?��? ?�았?�니??");
             return false;
         }
 
@@ -126,15 +126,16 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             long currentTimeMillis = System.currentTimeMillis();
 
             if (expirationTimeMillis < currentTimeMillis) {
-                log.debug("JWT가 만료되었습니다.");
+                log.debug("JWT가 만료?�었?�니??");
                 return false;
             }
 
             return true;
 
         } catch (Exception e) {
-            log.debug("JWT 검증 중 오류 발생: {}", e.getMessage());
+            log.debug("JWT 검�?�??�류 발생: {}", e.getMessage());
             return false;
         }
     }
 }
+
