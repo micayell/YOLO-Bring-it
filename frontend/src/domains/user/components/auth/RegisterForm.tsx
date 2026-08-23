@@ -6,7 +6,6 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Separator } from "@/shared/ui/separator";
 import { authService } from "@/domains/user/services/authService";
-import { useUserLoginStore } from "@/domains/user/stores/userStore";
 
 interface RegisterFormProps {
   onRegister: () => void;
@@ -38,7 +37,7 @@ export function RegisterForm({ onRegister, onClose, onSwitchToLogin }: RegisterF
     // 소셜 회원가입 시뮬레이션
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsLoading(false);
-    onRegister();
+    onSwitchToLogin(); // 소셜 회원가입 후 로그인으로 유도
   };
 
   ///////////////
@@ -77,22 +76,39 @@ export function RegisterForm({ onRegister, onClose, onSwitchToLogin }: RegisterF
   }, [step, timer]);
 
   const handleSendCode = async () => {
+    if (!formData.email) {
+      alert("이메일을 입력해주세요.");
+      return;
+    }
+    
+    setIsLoading(true);
     try {
       await authService.sendVerificationCode(formData.email);
       setStep(2);
       setTimer(300); // 5분
-    } catch {
-      alert("이메일 전송 실패");
+    } catch (error: any) {
+      console.error(error);
+      const errorMsg = error.response?.data?.message || "이메일 전송 실패";
+      alert(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleVerifyCode = async () => {
+    if (!code) {
+      alert("인증번호를 입력해주세요.");
+      return;
+    }
+
     try {
       await authService.verifyCode(formData.email, code);
       if (timerId) clearInterval(timerId);
       setStep(3);
-    } catch {
-      alert("인증번호가 올바르지 않습니다.");
+    } catch (error: any) {
+      console.error(error);
+      const errorMsg = error.response?.data?.message || "인증번호가 올바르지 않습니다.";
+      alert(errorMsg);
     }
   };
 
@@ -130,7 +146,7 @@ export function RegisterForm({ onRegister, onClose, onSwitchToLogin }: RegisterF
     e.preventDefault();
     setIsLoading(true);
     try {
-      const responseData = await authService.signUp({
+      await authService.signUp({
         email: formData.email,
         password: formData.password,
         name: formData.name,
@@ -138,17 +154,13 @@ export function RegisterForm({ onRegister, onClose, onSwitchToLogin }: RegisterF
         intro: "",
       });
 
-      // 응답에서 필요한 데이터 추출 (백엔드 응답 구조에 맞춰야 함)
-      const userData = responseData.data;
+      alert("회원가입이 완료되었습니다. 로그인해주세요.");
+      // 회원가입 성공 시 로그인 폼으로 전환
+      onSwitchToLogin();
 
-      // useUserLoginStore에 저장
-      useUserLoginStore.getState().setUser(userData);
-
-      // 부모로 콜백: 게임 로비로 이동
-      onRegister();  // App.tsx 또는 useGameLogic에서 currentScreen을 'lobby'로 변경
-
-    } catch {
-      alert("회원가입 실패");
+    } catch (error: any) {
+      console.error(error);
+      alert(error.response?.data?.message || "회원가입에 실패했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -293,8 +305,17 @@ export function RegisterForm({ onRegister, onClose, onSwitchToLogin }: RegisterF
                   </div>
                   <Button type="button" onClick={handleSendCode}
                     className="w-full h-12 bg-gradient-to-r from-[#6dc4e8] to-[#5ab4d8] hover:from-[#5ab4d8] hover:to-[#4aa2c8] text-white rounded-[12px] font-['BM_HANNA_TTF:Regular',_sans-serif] tracking-wider disabled:opacity-50"
+                    disabled={isLoading}
                   >
-                    인증메일 보내기
+                    {isLoading ? (
+                      <motion.div
+                        className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      />
+                    ) : (
+                      "인증메일 보내기"
+                    )}
                   </Button>
                 </>
               )}

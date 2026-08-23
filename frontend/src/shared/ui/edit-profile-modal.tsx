@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "@/shared/services/api";
 
 // ✅ Zustand 스토어
 import { useUserLoginStore } from "@/domains/user/stores/userStore";
@@ -57,7 +58,7 @@ export function EditProfileModal({
       alert("필수 입력값을 확인해 주세요. (기존 비밀번호는 필수입니다)");
       return;
     }
-    const url = `https://i13c207.p.ssafy.io/api/v1/users/users/${memberId}`;
+    const url = `${API_BASE_URL}/users/users/${memberId}`;
     const payload = { nickname, name, password, newpassword };
 
     try {

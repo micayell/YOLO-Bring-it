@@ -376,7 +376,7 @@ export function LobbyScreen({ onStartGame }: LobbyScreenProps) {
       } catch (error) {
         console.error("데이터를 가져오지 못했습니다:", error);
         setRecentPlayers([]);
-        alert("최근 플레이어 또는 친구 목록을 가져오는데 실패했습니다.");
+        // 백그라운드 폴링 실패 시 alert를 띄우지 않도록 수정
       }
     };
 
