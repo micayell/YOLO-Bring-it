@@ -3,20 +3,20 @@ import { useState, useEffect, useRef } from "react";
 import type { GameData, RoundResult } from "@/shared/types/game";
 import { useLiveKitStore } from "@/domains/game/stores/livekitStore";
 import { livekitService } from "@/domains/game/services/livekitService";
-import { Room, ConnectionState } from 'livekit-client';
+import { Room, ConnectionState, RoomEvent, Track } from 'livekit-client';
 import { useGameWebSocket } from "@/domains/game/hooks/useGameWebSocket";
 import { useUserLoginStore } from "@/domains/user/stores/userStore";
 import apiClient from "@/shared/services/api";
 import { toast } from "sonner";
 // 분리된 컴포넌트들
 import { GameCountdownScreen } from "@/domains/game/components/game";
-import { TheFastestFinger } from "@/domains/game/components/game/games/TheFastestFinger";
 import { FaceIt } from "@/domains/game/components/game/games/FaceIt";
 import { BringIt } from "@/domains/game/components/game/games/BringIt";
 import { ColorKiller } from "@/domains/game/components/game/games/ColorKiller";
-
-// 테스트용: TheFastestFinger 게임 강제 실행 모드
-const IS_TEST_MODE_FASTEST_FINGER = false;
+import { ShowMeTheArt } from "@/domains/game/components/game/games/ShowMeTheArt";
+// import { VoiceCrack } from "@/domains/game/components/game/games/VoiceCrack";
+import { TimeSniper } from "@/domains/game/components/game/games/TimeSniper";
+import { TheFastestFinger } from "@/domains/game/components/game/games/TheFastestFinger";
 
 interface GameScreenProps {
   gameData: GameData;
@@ -58,6 +58,7 @@ export function GameScreen({
   
   // StrictMode 중복 실행 방지용 Ref
   const effectRan = useRef(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // 인게임 웹소켓 연결
   const {
@@ -96,6 +97,17 @@ export function GameScreen({
     }
   });
 
+  // 게임 페이즈가 playing이 되어 비디오 요소가 렌더링되었을 때 트랙을 attach 해줌
+  useEffect(() => {
+    if (gamePhase === "playing" && room && videoRef.current) {
+      console.log('📹 게임 플레이 시작: 로컬 비디오 트랙을 비디오 요소에 연결합니다.');
+      const videoTrack = room.localParticipant.getTrackPublication(Track.Source.Camera)?.track;
+      if (videoTrack) {
+        videoTrack.attach(videoRef.current);
+      }
+    }
+  }, [gamePhase, room]);
+
   // LiveKit 연결 함수
   const connectToLiveKit = async () => {
     console.log('🎥 LiveKit 연결 시작...', { roomId, livekitUrl });
@@ -107,28 +119,36 @@ export function GameScreen({
       console.log('✅ LiveKit 토큰 획득:', token.substring(0, 20) + '...');
 
       const livekitRoom = new Room({
-        dynacast: true,
+        // noinspection SpellCheckingInspection
+          dynacast: true,
       });
       
       // 이벤트 리스너 등록
-      livekitRoom.on('participantConnected', (participant: any) => {
+      livekitRoom.on(RoomEvent.ParticipantConnected, (participant: any) => {
         console.log('👋 참가자 연결:', participant.identity);
         addParticipant(participant);
       });
 
-      livekitRoom.on('participantDisconnected', (participant: any) => {
+      livekitRoom.on(RoomEvent.ParticipantDisconnected, (participant: any) => {
         console.log('👋 참가자 연결 해제:', participant.identity);
         removeParticipant(participant);
       });
 
-      livekitRoom.on('disconnected', (reason) => {
+      livekitRoom.on(RoomEvent.Disconnected, (reason) => {
         console.log('🔌 LiveKit 연결 해제:', reason);
         setConnected(false);
         setConnecting(false);
       });
 
+      // 로컬 트랙 발행 시 비디오 요소가 이미 마운트되어있다면 바로 적용
+      livekitRoom.on(RoomEvent.LocalTrackPublished, (publication) => {
+        if (publication.track?.kind === 'video' && videoRef.current) {
+          publication.track.attach(videoRef.current);
+        }
+      });
+
       // 연결 상태 변경 이벤트 리스너 추가
-      livekitRoom.on('connectionStateChanged', async (state) => {
+      livekitRoom.on(RoomEvent.ConnectionStateChanged, async (state) => {
         console.log('🔄 LiveKit 연결 상태 변경:', state);
         if (state === ConnectionState.Connected) {
           console.log('✅ LiveKit 미디어 엔진 연결 완료');
@@ -156,7 +176,7 @@ export function GameScreen({
   const disconnectFromLiveKit = () => {
     console.log('🚪 LiveKit 연결 해제...');
     if (room) {
-      room.disconnect();
+      void room.disconnect();
     }
     resetLivekit();
   };
@@ -181,7 +201,8 @@ export function GameScreen({
           setGamePhase("countdown");
           setCountdown(3);
         } else {
-          throw new Error("유효하지 않은 라운드 정보 형식");
+          toast.error("유효하지 않은 라운드 정보 형식");
+          return;
         }
       } catch (error) {
         console.error('❌ 라운드 정보 불러오기 실패:', error);
@@ -189,12 +210,12 @@ export function GameScreen({
       }
     };
 
-    fetchRoundInfo();
+    void fetchRoundInfo();
   }, [currentRoundIdx, roomId, userData?.memberUid]);
 
   // 게임 시작 시 LiveKit 연결
   useEffect(() => {
-    if (effectRan.current === true) {
+    if (effectRan.current) {
       return;
     }
 
@@ -202,14 +223,14 @@ export function GameScreen({
     
     if (roomId) {
       console.log('🎮 게임 시작: LiveKit 연결 시작');
-      connectToLiveKit();
+      void connectToLiveKit();
     }
 
     effectRan.current = true;
 
     return () => {
       console.log('🚪 게임 종료: LiveKit 연결 해제');
-      disconnectFromLiveKit();
+      void disconnectFromLiveKit();
     };
   }, [roomId]);
 
@@ -231,7 +252,6 @@ export function GameScreen({
       const timer = setTimeout(() => {
         setGamePhase("playing");
         setIsGameTimerRunning(true);
-        setGameTime(0);
         console.log('✅ 게임 페이즈를 playing으로 변경');
       }, 500);
       return () => clearTimeout(timer);
@@ -268,76 +288,47 @@ export function GameScreen({
       setGamePhase("complete");
     };
 
-    if (IS_TEST_MODE_FASTEST_FINGER) {
-      return (
-        <TheFastestFinger
-          localParticipant={room?.localParticipant}
-          remoteParticipants={Array.from(livekitParticipants.values())}
-          onRoundComplete={(data) => {
-            const roundResult = {
-              round: 1,
-              gameType: 'quick_press' as const,
-              rankings: data.playerResults.map((pr, index) => ({
-                playerId: pr.id.toString(),
-                score: pr.reactionTime || 0,
-                rank: index + 1,
-                performance: pr.reactionTime ? `${pr.reactionTime}초` : 'N/A'
-              }))
-            };
-            onRoundComplete(roundResult);
-          }}
-        />
-      );
-    }
-
-        switch (gameData.gameType) {
+    switch (gameData.gameType) {
       case 'bring_object':
-        return (
-          <BringIt
-            timeLeft={gameTime}
-            roomId={roomId}
-            roundIdx={currentRoundIdx || 1}
-            onGameComplete={handleGameComplete}
-          />
-        );
+        return <BringIt videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} />;
       case 'expression':
+        return <FaceIt videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} />;
+      case 'color_similar':
+        return <ColorKiller videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} />;
+      case 'drawing':
+        return <ShowMeTheArt videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} />;
+      case 'timing_click':
         return (
-          <FaceIt
+          <TimeSniper
+            targetTime={5}
+            currentTime={gameTime}
             timeLeft={gameTime}
-            roomId={roomId}
-            roundIdx={currentRoundIdx || 1}
-            onGameComplete={handleGameComplete}
-          />
-        );
-            case 'color_killer':
-        return (
-          <ColorKiller
-            timeLeft={gameTime}
-            roomId={roomId}
-            roundIdx={currentRoundIdx || 1}
-            onGameComplete={handleGameComplete}
+            onTimeClick={() => {
+              console.log("TimeSniper clicked!");
+              handleGameComplete(true, [], 100);
+            }}
           />
         );
       case 'quick_press':
-          return (
-            <TheFastestFinger
-              localParticipant={room?.localParticipant}
-              remoteParticipants={Array.from(livekitParticipants.values())}
-              onRoundComplete={(data) => {
-                const roundResult = {
-                  round: currentRoundIdx || 1,
-                  gameType: 'quick_press' as const,
-                  rankings: data.playerResults.map((pr, index) => ({
-                    playerId: pr.id.toString(),
-                    score: pr.reactionTime || 0,
-                    rank: index + 1,
-                    performance: pr.reactionTime ? String(pr.reactionTime) : "",
-                  }))
-                };
-                onRoundComplete(roundResult);
-              }}
-            />
-          );
+        return (
+          <TheFastestFinger
+            localParticipant={room?.localParticipant}
+            remoteParticipants={Array.from(livekitParticipants.values())}
+            onRoundComplete={(data) => {
+              const roundResult = {
+                round: currentRoundIdx || 1,
+                gameType: 'quick_press' as const,
+                rankings: data.playerResults.map((pr, index) => ({
+                  playerId: pr.id.toString(),
+                  score: pr.reactionTime ? Math.max(0, 10000 - pr.reactionTime) : 0,
+                  rank: index + 1,
+                  performance: pr.reactionTime ? String(pr.reactionTime) : "",
+                }))
+              };
+              onRoundComplete(roundResult);
+            }}
+          />
+        );
       default:
         return <div>알 수 없는 게임: {gameData.gameType}</div>;
     }
