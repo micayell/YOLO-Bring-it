@@ -173,41 +173,6 @@ export function useGameLogic() {
 
     // 임시로 폴백 모드로 전환 (백엔드 서버 500 오류로 인해)
     const fetchFirstGame = async () => {
-      console.log('🎮 게임 시작 (폴백 모드 - 백엔드 500 오류로 인한 임시 조치)', { roomUid, players: players.length });
-      
-      const newGameData: GameData = {
-        currentRound: 1,
-        totalRounds: gameRounds,
-        players: players.map(player => ({
-          ...player,
-          totalScore: 0,
-          roundScores: []
-        })),
-        roundResults: [],
-        gameType: GAME_TYPES[Math.floor(Math.random() * GAME_TYPES.length)],
-        gameName: "게임 이름", // 임시값
-        gameDescription: "게임 설명", // 임시값
-        roomId: roomUid
-      };
-      
-      setGameData(newGameData);
-      console.log("🎮 useGameLogic: currentScreen을 'game'으로 변경");
-      setCurrentScreen("game");
-      console.log("✅ 게임 데이터 설정 완료 (폴백 모드)", newGameData);
-      
-      /* 백엔드 API 모드 (500 오류로 인해 비활성화)
-        예상되는 문제점:
-        1. RoomMember 엔티티의 @JoinColumn(name = "roomId")와 Room 엔티티의 @Id @Column(name="room_uid") 불일치
-        2. 데이터베이스 스키마 매핑 오류로 인한 SQL 조인 실패
-        3. findByRoom_RoomUidAndUserId 메서드에서 정확한 컬럼명을 찾지 못함
-        
-        해결 방안:
-        - RoomMember.java의 @JoinColumn(name = "roomId")를 @JoinColumn(name = "room_uid")로 수정
-        - 또는 Room.java의 컬럼명을 "roomId"로 통일
-        
-        현재는 폴백 모드로 프론트엔드 개발 진행 중 */
-      
-      /*
       try {
         const accessToken = userData?.accessToken;
         console.log('🔑 인증 토큰 확인:', accessToken ? '토큰 있음' : '토큰 없음');
@@ -269,25 +234,8 @@ export function useGameLogic() {
         console.log("✅ 게임 데이터 설정 완료", newGameData);
       } catch (error) {
         console.error('❌ 첫 번째 라운드 게임 정보 조회 실패:', error);
-        // 실패 시 기존 랜덤 로직으로 폴백
-        const newGameData: GameData = {
-          currentRound: 1,
-          totalRounds: gameRounds,
-          players: players.map(player => ({
-            ...player,
-            totalScore: 0,
-            roundScores: []
-          })),
-          roundResults: [],
-          gameType: GAME_TYPES[Math.floor(Math.random() * GAME_TYPES.length)],
-          roomId: roomUid
-        };
-        
-        setGameData(newGameData);
-        setCurrentScreen("game");
-        console.log("✅ 게임 데이터 설정 완료 (폴백)", newGameData);
       }
-      */
+
     };
 
     fetchFirstGame();
@@ -397,16 +345,8 @@ export function useGameLogic() {
         setGameData(updatedGameData);
         setCurrentScreen("game");
       } catch (error) {
-        console.error('❌ 게임 정보 조회 실패:', error);
-        // 실패 시 기존 랜덤 로직으로 폴백
-        const nextGameType = GAME_TYPES[Math.floor(Math.random() * GAME_TYPES.length)];
-        const updatedGameData = {
-          ...gameData,
-          currentRound: gameData.currentRound + 1,
-          gameType: nextGameType
-        };
-        setGameData(updatedGameData);
-        setCurrentScreen("game");
+        console.error('Failed to get game info:', error);
+        setCurrentScreen("waitingRoom");
       }
     };
 

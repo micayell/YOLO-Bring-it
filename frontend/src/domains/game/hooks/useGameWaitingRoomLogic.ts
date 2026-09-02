@@ -205,6 +205,10 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
   };
 
   const handleInviteFriend = async (friendId: string) => {
+    if (players.some(p => p.id === friendId)) {
+        toast.error('이미 방에 초대되었거나 참여 중인 친구입니다.');
+        return;
+    }
     if (!roomId || !userData?.accessToken || !userData?.memberUid) {
       console.error('초대 실패: 방 정보 또는 사용자 정보가 없습니다.');
       return;
@@ -328,7 +332,7 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
           memberId: friend.memberId,
           id: friend.memberId.toString(),
           nickname: friend.nickname,
-          status: friend.isOnline ? 'online' : 'offline',
+          status: (friend.online || friend.isOnline) ? 'online' : 'offline',
           avatarUrl: `https://api.dicebear.com/8.x/pixel-art/svg?seed=${friend.nickname}`,
           level: friend.level || 1,
           mutualFriends: friend.mutualFriends || 0,

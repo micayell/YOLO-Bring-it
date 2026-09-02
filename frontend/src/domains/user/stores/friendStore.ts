@@ -66,13 +66,13 @@ export const useFriendStore = create<FriendState>((set) => ({
   setFriendOnline: (memberId) =>
     set((state) => ({
       friends: state.friends.map((friend) =>
-        friend.memberId === memberId ? { ...friend, status: 'online' } : friend
+        String(friend.memberId) === String(memberId) ? { ...friend, status: 'online' } : friend
       ),
     })),
   setFriendOffline: (memberId) =>
     set((state) => ({
       friends: state.friends.map((friend) =>
-        friend.memberId === memberId ? { ...friend, status: 'offline' } : friend
+        String(friend.memberId) === String(memberId) ? { ...friend, status: 'offline' } : friend
       ),
     })),
 
