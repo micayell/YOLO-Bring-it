@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { Screen, GameData, Player, RoundResult, GameType } from "@/shared/types/game";
 import { useUserLoginStore } from "@/domains/user/stores/userStore";
 import apiClient from "@/shared/services/api";
-import { GAME_TYPES, PERFORMANCE_CONFIGS, GAME_CONFIG } from "@/shared/types/game";
+import { PERFORMANCE_CONFIGS, GAME_CONFIG } from "@/shared/types/game";
 
 // 백엔드 게임 코드를 프론트엔드 GameType으로 변환
 const gameCodeToType = (gameCode: number): GameType => {
@@ -179,7 +179,8 @@ export function useGameLogic() {
         console.log('👤 유저 데이터:', userData);
         
         if (!accessToken) {
-          throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+          console.error('❌ 첫 번째 라운드 게임 정보 조회 실패: 인증 토큰이 없습니다. 로그인이 필요합니다.');
+          return;
         }
         
         // 1단계: 게임 시작 API 호출 (게임 라운드 데이터 생성) - URL 대소문자 수정
@@ -195,7 +196,8 @@ export function useGameLogic() {
         if (!startGameResponse.ok) {
           const errorText = await startGameResponse.text();
           console.error('❌ 게임 시작 API 오류:', startGameResponse.status, errorText);
-          throw new Error(`게임 시작에 실패했습니다. (${startGameResponse.status}): ${errorText}`);
+          console.error(`게임 시작에 실패했습니다. (${startGameResponse.status}): ${errorText}`);
+          return;
         }
         console.log('✅ 게임 시작 성공');
         
@@ -210,7 +212,8 @@ export function useGameLogic() {
         });
 
         if (!response.ok) {
-          throw new Error('첫 번째 라운드 게임 정보를 가져오는데 실패했습니다.');
+          console.error('첫 번째 라운드 게임 정보를 가져오는데 실패했습니다.');
+          return;
         }
 
         const gameInfo = await response.json();
@@ -315,7 +318,8 @@ export function useGameLogic() {
         console.log('🔑 다음 라운드 인증 토큰 확인:', accessToken ? '토큰 있음' : '토큰 없음');
         
         if (!accessToken) {
-          throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+          console.error('❌ 첫 번째 라운드 게임 정보 조회 실패: 인증 토큰이 없습니다. 로그인이 필요합니다.');
+          return;
         }
         
         const roomId = gameData.roomId; // gameData.roomId는 이미 number 타입
@@ -330,7 +334,9 @@ export function useGameLogic() {
         });
 
         if (response.status < 200 || response.status >= 300) {
-          throw new Error('게임 정보를 가져오는데 실패했습니다.');
+          console.error('게임 정보를 가져오는데 실패했습니다.');
+          setCurrentScreen("waitingRoom");
+          return;
         }
 
         const gameInfo = response.data;

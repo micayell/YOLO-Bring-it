@@ -155,7 +155,9 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
         },
       });
       if (response.status !== 200 && response.status !== 201) {
-        throw new Error("방 생성에 실패했습니다.");
+        console.error("Error creating room: status != 200/201");
+        toast.error("방 생성을 실패했습니다. 다시 시도해 주세요.");
+        return;
       }
       const result = response.data;
       if (result.data && result.data.roomUid) {
@@ -168,7 +170,9 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
           type: "system",
         }]);
       } else {
-        throw new Error("방 ID를 받아오지 못했습니다.");
+        console.error("Error creating room: No room ID");
+        toast.error('방을 생성하는 데 실패했습니다. 다시 시도해 주세요.');
+        return;
       }
     } catch (error) {
       console.error("Error creating room:", error);
@@ -239,7 +243,9 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
         },
       });
       if (response.status !== 200) {
-        throw new Error("게임 시작에 실패했습니다.");
+        console.error("게임 시작 중 오류 발생: status != 200");
+        toast.error('게임을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+        return;
       }
       onStartGame(players, roomId);
     } catch (error) {
@@ -271,7 +277,7 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
   }, [roomId, onBack, userData?.accessToken]);
 
   useEffect(() => {
-    if (effectRan.current === true) return;
+    if (effectRan.current) return;
     if (invitedRoomId) {
       console.log(`✉️ 초대를 통해 방 ${invitedRoomId}에 입장합니다.`);
       setRoomId(invitedRoomId);
