@@ -32,12 +32,13 @@ public class FriendResponseDto {
         private Long memberId; // 상대방 ID
         private Boolean isAccepted;
         private boolean isOnline;
+        private String nickname;
 
         public static FriendInfoWithOnline from(Friend friend, Long currentId, Boolean isOnline) {
             Member other = friend.getSender().getMemberUid().equals(currentId)
                     ? friend.getReceiver()
                     : friend.getSender();
-            return new FriendInfoWithOnline(friend.getFriendUid(), other.getMemberUid(), friend.getIsAccepted(), isOnline);
+            return new FriendInfoWithOnline(friend.getFriendUid(), other.getMemberUid(), friend.getIsAccepted(), isOnline, other.getNickname());
         }
     }
 

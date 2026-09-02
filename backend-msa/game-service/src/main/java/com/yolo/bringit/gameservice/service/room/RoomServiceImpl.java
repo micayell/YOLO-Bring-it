@@ -139,6 +139,10 @@ public class RoomServiceImpl implements RoomService {
         ClientResponseDto.MemberSimpleInfo sender = infoMap.get(senderId);
         ClientResponseDto.MemberSimpleInfo receiver = infoMap.get(receiverId);
 
+        if (roomMemberRepository.existsByRoom_RoomUidAndUserId(roomId, receiverId)) {
+            throw new IllegalArgumentException("이미 방에 참여 중인 참가자입니다.");
+        }
+
         // todo 현재 참여자가 온라인에 있는지 확인 -> websocket을 이용한 로직 구현
         Map<Long, Boolean> onlineMap = circuitBreaker.run(
                 () -> userServiceClient.getOnlineStatuses(List.of(receiverId)),
@@ -167,7 +171,11 @@ public class RoomServiceImpl implements RoomService {
 
         List<RoomMember> roomMemberList = roomMemberRepository.findAllByRoom(room);
 
-        if (room.getIsJoinable() && roomMemberList.size() < 6) { // 방 참여 가능하고 인원이 다 안찼는지(최대 6명) 체크
+        if (roomMemberList.stream().anyMatch(m -> m.getUserId().equals(receiverId))) {
+            throw new IllegalArgumentException("이미 방에 참여한 참가자입니다.");
+        }
+
+        if (room.getIsJoinable() && roomMemberList.size() < 6) { 
             roomMemberRepository.save(RoomMember.builder()
                     .room(room)
                     .userId(receiverId)
