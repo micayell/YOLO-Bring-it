@@ -11,7 +11,9 @@ import { toast } from "sonner";
 // 분리된 컴포넌트들
 import { GameCountdownScreen } from "@/domains/game/components/game";
 import { TheFastestFinger } from "@/domains/game/components/game/games/TheFastestFinger";
+import { FaceIt } from "@/domains/game/components/game/games/FaceIt";
 import { BringIt } from "@/domains/game/components/game/games/BringIt";
+import { ColorKiller } from "@/domains/game/components/game/games/ColorKiller";
 
 // 테스트용: TheFastestFinger 게임 강제 실행 모드
 const IS_TEST_MODE_FASTEST_FINGER = false;
@@ -32,7 +34,7 @@ export function GameScreen({
   const [countdown, setCountdown] = useState<number>(3);
   const [gameTime, setGameTime] = useState<number>(0); // 게임 진행 시간
   const [isGameTimerRunning, setIsGameTimerRunning] = useState<boolean>(false);
-  const [currentRoundIdx, setCurrentRoundIdx] = useState<number | null>(null);
+  const [currentRoundIdx, setCurrentRoundIdx] = useState<number | null>(gameData.currentRound);
   const [currentGameInfo, setCurrentGameInfo] = useState<any | null>(null);
 
   // 인증 정보 가져오기
@@ -288,16 +290,56 @@ export function GameScreen({
       );
     }
 
-    switch (currentGameInfo?.gameCode) {
+        switch (gameData.gameType) {
       case 'bring_object':
         return (
           <BringIt
             timeLeft={gameTime}
+            roomId={roomId}
+            roundIdx={currentRoundIdx || 1}
             onGameComplete={handleGameComplete}
           />
         );
+      case 'expression':
+        return (
+          <FaceIt
+            timeLeft={gameTime}
+            roomId={roomId}
+            roundIdx={currentRoundIdx || 1}
+            onGameComplete={handleGameComplete}
+          />
+        );
+            case 'color_killer':
+        return (
+          <ColorKiller
+            timeLeft={gameTime}
+            roomId={roomId}
+            roundIdx={currentRoundIdx || 1}
+            onGameComplete={handleGameComplete}
+          />
+        );
+      case 'quick_press':
+          return (
+            <TheFastestFinger
+              localParticipant={room?.localParticipant}
+              remoteParticipants={Array.from(livekitParticipants.values())}
+              onRoundComplete={(data) => {
+                const roundResult = {
+                  round: currentRoundIdx || 1,
+                  gameType: 'quick_press' as const,
+                  rankings: data.playerResults.map((pr, index) => ({
+                    playerId: pr.id.toString(),
+                    score: pr.reactionTime || 0,
+                    rank: index + 1,
+                    performance: pr.reactionTime ? String(pr.reactionTime) : "",
+                  }))
+                };
+                onRoundComplete(roundResult);
+              }}
+            />
+          );
       default:
-        return <div>알 수 없는 게임: {currentGameInfo?.gameCode}</div>;
+        return <div>알 수 없는 게임: {gameData.gameType}</div>;
     }
   };
 
