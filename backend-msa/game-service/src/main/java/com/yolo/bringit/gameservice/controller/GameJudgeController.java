@@ -61,11 +61,11 @@ public class GameJudgeController {
                     );
 ////                case "5":
 ////                    // Blink Battle
-//                case "6": // Sound It!
-//                    return responseHandler.success(
-//                            aiService.checkVoiceSimilarity(roomId, roundIdx,
-//                                    targetAudioPath, userAudioPath, userId, language)
-//                    );
+                case "6": // Sound It!
+                    return responseHandler.success(
+                            aiService.checkVoiceSimilarity(roomId, roundIdx,
+                                    targetAudioPath, userAudioPath, userId, language)
+                    );
 //                case "7":
 //                    // Trap Word
 //                case "8":

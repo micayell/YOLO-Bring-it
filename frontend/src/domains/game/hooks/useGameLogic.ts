@@ -161,13 +161,7 @@ export function useGameLogic() {
     //   return;
     // }
 
-    const readyCount = players.filter(p => p.isReady).length;
-    console.log(`📊 플레이어 준비 상태: ${readyCount}/${players.length}`);
-    
-    if (readyCount < players.length) {
-      console.warn("⚠️ 모든 플레이어가 준비되지 않았습니다!");
-      return;
-    }
+// Bypass ready check - already handled by backend
 
     console.log("🏠 사용할 Room UID:", roomUid);
 
@@ -183,26 +177,8 @@ export function useGameLogic() {
           return;
         }
         
-        // 1단계: 게임 시작 API 호출 (게임 라운드 데이터 생성) - URL 대소문자 수정
-        console.log('🎮 게임 시작 API 호출...');
-        const startGameResponse = await apiClient.patch(`/games/rooms/${roomUid}/status/starting?_t=` + Date.now(), {}, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-MEMBER-UID': userData?.memberUid?.toString() || '',
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-
-        if (!startGameResponse.ok) {
-          const errorText = await startGameResponse.text();
-          console.error('❌ 게임 시작 API 오류:', startGameResponse.status, errorText);
-          console.error(`게임 시작에 실패했습니다. (${startGameResponse.status}): ${errorText}`);
-          return;
-        }
-        console.log('✅ 게임 시작 성공');
-        
-        // 2단계: 첫 번째 라운드 게임 정보 조회
-        console.log('🎯 첫 번째 라운드 게임 정보 조회...');
+        // 게임 라운드 데이터 조회 (시작 처리는 대기실에서 이미 완료됨)
+        console.log('🔄 첫 번째 라운드 게임 정보 조회...');
         const response = await apiClient.get(`/games/in-game-rounds/${roomUid}/1`, {
           headers: {
             'Content-Type': 'application/json',
@@ -211,13 +187,13 @@ export function useGameLogic() {
           }
         });
 
-        if (!response.ok) {
-          console.error('첫 번째 라운드 게임 정보를 가져오는데 실패했습니다.');
+        if (response.status !== 200) {
+          console.error('❌ 첫 번째 라운드 게임 정보 조회 실패: response.status != 200');
           return;
         }
 
-        const gameInfo = await response.json();
-        console.log('🎮 첫 번째 라운드 게임 정보:', gameInfo);
+        const gameInfo = response.data;
+        console.log('✅ 첫 번째 라운드 게임 정보:', gameInfo);
 
          const newGameData: GameData = {
            currentRound: 1,
@@ -335,7 +311,7 @@ export function useGameLogic() {
 
         if (response.status < 200 || response.status >= 300) {
           console.error('게임 정보를 가져오는데 실패했습니다.');
-          setCurrentScreen("waitingRoom");
+          setCurrentScreen("waiting-room");
           return;
         }
 
@@ -352,7 +328,7 @@ export function useGameLogic() {
         setCurrentScreen("game");
       } catch (error) {
         console.error('Failed to get game info:', error);
-        setCurrentScreen("waitingRoom");
+        setCurrentScreen("waiting-room");
       }
     };
 

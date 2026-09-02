@@ -1,5 +1,4 @@
 import { SocialLoginConfig } from '@/shared/types/auth';
-import { API_BASE_URL } from '@/shared/services/api';
 
 export const SOCIAL_LOGIN_CONFIG: SocialLoginConfig = {
   kakao: {

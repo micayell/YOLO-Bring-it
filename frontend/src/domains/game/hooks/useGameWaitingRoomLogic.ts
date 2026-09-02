@@ -234,7 +234,7 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
     }
   };
 
-  const handleStartGame = async () => {
+  const handleStartGame = useCallback(async () => {
     if (!roomId || !canStartGame || !userData) return;
     try {
       const response = await apiClient.patch(`/games/rooms/${roomId}/status/starting`, {}, {
@@ -242,17 +242,15 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
           'Authorization': `Bearer ${userData.accessToken}`,
         },
       });
-      if (response.status !== 200) {
-        console.error("게임 시작 중 오류 발생: status != 200");
-        toast.error('게임을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.');
-        return;
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(`Unexpected status code: ${response.status}`);
       }
       onStartGame(players, roomId);
     } catch (error) {
       console.error("게임 시작 중 오류 발생:", error);
       toast.error('게임을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.');
     }
-  };
+  }, [roomId, canStartGame, userData, onStartGame, players]);
 
   const handleLeaveRoom = useCallback(async () => {
     if (!roomId) {
@@ -372,7 +370,8 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
         clearTimeout(gameStartTimerRef.current);
       }
     };
-  }, [canStartGame, handleStartGame]);
+  }, [canStartGame]); // ONLY run when canStartGame changes!
+
 
   useEffect(() => {
     if (currentUser) {
