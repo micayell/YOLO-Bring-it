@@ -1,6 +1,5 @@
 import axios, { AxiosError } from 'axios';
 import { useUserLoginStore } from '@/domains/user/stores/userStore';
-import { authService } from '@/domains/user/services/authService'; // ✅ authService import
 
 // 환경에 따라 API BASE URL 분기 처리
 // 개발(DEV)일 때는 localhost, 빌드 시(production)에는 운영 서버 URL 사용
@@ -9,6 +8,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.en
 
 // WebSocket 연결을 위한 Base URL (WebSocket은 /api/v1 제외)
 export const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8080' : 'https://i13c207.p.ssafy.io');
+
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -39,7 +39,9 @@ apiClient.interceptors.response.use(
       (originalRequest as any)._retry = true; // 재시도 플래그 설정
       
       try {
-        const newAccessToken = await authService.refreshTokenForAuth(); // ✅ authService 사용
+        // 동적 임포트를 사용하여 순환 참조(Circular Dependency)를 해결
+        const { authService } = await import('@/domains/user/services/authService');
+        const newAccessToken = await authService.refreshTokenForAuth();
 
         if (newAccessToken) {
           // 원래 요청의 헤더에 새로운 Access Token 설정
@@ -50,7 +52,7 @@ apiClient.interceptors.response.use(
           console.log('🔄 원래 요청 재시도...');
           return apiClient(originalRequest);
         } else {
-          // 토큰 재발급 실패 시 (refreshTokenForAuth 내부에서 로그아웃 처리됨)
+          // 토큰 재발급 실패 시 (refreshTokenForAuth 내부에 로그아웃 처리됨)
           return Promise.reject(new Error("토큰 재발급 실패 후 요청 중단"));
         }
 
