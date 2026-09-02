@@ -4,13 +4,13 @@ import { IMessage, StompSubscription } from '@stomp/stompjs';
 
 interface GameSocketConfig {
   roomId?: number;
-  onParticipantEvent?: (data: any) => void; // JOINED, LEFT
-  onRosterChange?: (data: any) => void; // Full participant list
+  onParticipantEvent?: (data: any) => void;
+  onRosterChange?: (data: any) => void;
   onReadyStatus?: (data: any) => void;
   onCanStart?: (data: any) => void;
   onChatMessage?: (data: any) => void;
-  onRoundIntro?: (data: any) => void; // ROUND_INTRO
-  onRoundEnd?: (data: any) => void; // ROUND_ENDED
+  onRoundIntro?: (data: any) => void;
+  onRoundEnd?: (data: any) => void;
   onGameScore?: (data: any) => void;
   onError?: (error: any) => void;
 }
@@ -42,7 +42,7 @@ export const useGameWebSocket = (config?: GameSocketConfig) => {
   const savedHandlers = useRef(config);
   const subsRef = useRef<Sub[]>([]);
 
-  // 최신 핸들러 유지
+  // 최신 핸들러 유지 (렌더링 될 때마다 참조 업데이트)
   useEffect(() => {
     savedHandlers.current = config;
   }, [config]);
@@ -139,7 +139,7 @@ export const useGameWebSocket = (config?: GameSocketConfig) => {
           savedHandlers.current?.onRoundEnd?.(data);
           break;
         default:
-          // JOINED, LEFT 등 다른 이벤트는 이미 participants 토픽에서 처리되므로 여기선 무시
+          // JOINED, LEFT 등 다른 이벤트는 이미 participants 채널에서 처리되므로 무시
           break;
       }
     });
@@ -157,7 +157,7 @@ export const useGameWebSocket = (config?: GameSocketConfig) => {
       unsubscribeAll('effect-cleanup');
       log(`📴 구독 종료 (roomId=${roomId})`);
     };
-  }, [client, isConnected, roomId, subscribe, unsubscribeAll, config]);
+  }, [client, isConnected, roomId, subscribe, unsubscribeAll]); // ⬅️ Remove 'config' from dependency array to prevent WebSocket tear downs on every render
 
   // 퍼블리시 공통 유틸(로깅 + 가드)
   const publish = useCallback((destination: string, body: any) => {
@@ -168,48 +168,16 @@ export const useGameWebSocket = (config?: GameSocketConfig) => {
       client.publish({ destination, body: JSON.stringify(body) });
     } catch (e) {
       err('PUB 예외:', destination, e);
-      savedHandlers.current?.onError?.(e);
     }
   }, [client]);
 
-  // === 외부로 노출: 동일 API (로깅 보강) ===
-  const sendMessage = useCallback((message: string) => {
-    if (!roomId) { warn('sendMessage: roomId 없음'); return; }
-    publish(`/pub/chat/${roomId}`, { roomId, content: message });
-  }, [publish, roomId]);
-
-  const sendGameStart = useCallback((gameType: string) => {
-    if (!roomId) { warn('sendGameStart: roomId 없음'); return; }
-    publish(`/pub/game/${roomId}/start`, { gameType });
-  }, [publish, roomId]);
-
-  const sendGameScore = useCallback((gameCode: number, score: number) => {
-    if (!roomId) { warn('sendGameScore: roomId 없음'); return; }
-    publish(`/pub/game/${roomId}/score`, { gameCode, score });
-  }, [publish, roomId]);
-
-  const sendGameEnd = useCallback((gameCode: string, result: string, finalScore: number) => {
-    if (!roomId) { warn('sendGameEnd: roomId 없음'); return; }
-    publish(`/pub/game/${roomId}/end`, { gameCode, result, finalScore });
-  }, [publish, roomId]);
-
-  const sendYoloUp = useCallback((targetMemberId: number) => {
-    if (!roomId) { warn('sendYoloUp: roomId 없음'); return; }
-    publish(`/pub/game/${roomId}/yolo`, { type: 'UP', targetMemberId });
-  }, [publish, roomId]);
-
-  const sendYoloDown = useCallback((targetMemberId: number) => {
-    if (!roomId) { warn('sendYoloDown: roomId 없음'); return; }
-    publish(`/pub/game/${roomId}/yolo`, { type: 'DOWN', targetMemberId });
-  }, [publish, roomId]);
+  // 구체적인 전송 메서드들
+  const sendMessage = useCallback((content: string) => {
+    if (!roomId) return;
+    publish(makeTopic(roomId, 'room/:roomId/chat'), { content });
+  }, [roomId, publish]);
 
   return {
-    isConnected,
     sendMessage,
-    sendGameStart,
-    sendGameScore,
-    sendGameEnd,
-    sendYoloUp,
-    sendYoloDown,
   };
 };
