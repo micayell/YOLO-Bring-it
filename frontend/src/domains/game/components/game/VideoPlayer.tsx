@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Mic, MicOff, Video, VideoOff } from "lucide-react";
+import React from "react";
 
 
 interface VideoPlayerProps {

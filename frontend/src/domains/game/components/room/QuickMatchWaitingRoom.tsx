@@ -42,6 +42,7 @@ export function QuickMatchWaitingRoom({ onStartGame, onBack }: QuickMatchWaiting
     handleKeyPress,
     handleToggleReady,
     currentUser,
+    handleLeaveRoom,
   } = useGameWaitingRoomLogic({ gameMode: "quick", onStartGame, onBack });
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export function QuickMatchWaitingRoom({ onStartGame, onBack }: QuickMatchWaiting
 
   return (
     <div className="h-screen w-full text-slate-800 relative overflow-hidden flex flex-col bg-[#F0F8FF] font-sans">
-      <Header onBack={onBack} isLocked={!roomId} />
+      <Header onBack={handleLeaveRoom} isLocked={!roomId} />
       
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 pt-20">
         <div className="w-full flex flex-row items-stretch justify-center gap-8 max-h-[650px] lg:max-h-[700px] xl:max-h-[750px]">
@@ -74,7 +75,7 @@ export function QuickMatchWaitingRoom({ onStartGame, onBack }: QuickMatchWaiting
               message={message}
               setMessage={setMessage}
               onSendMessage={handleSendMessage}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               onToggleReady={handleToggleReady}
               currentUser={currentUser}
               isLocked={!roomId}
@@ -86,7 +87,7 @@ export function QuickMatchWaitingRoom({ onStartGame, onBack }: QuickMatchWaiting
   );
 }
 
-function QuickMatchSidePanel({ messages, message, setMessage, onSendMessage, onKeyPress, onToggleReady, currentUser, isLocked }: any) {
+function QuickMatchSidePanel({ messages, message, setMessage, onSendMessage, onKeyDown, onToggleReady, currentUser, isLocked }: any) {
   return (
     <Card className="w-full h-full bg-white/70 backdrop-blur-xl border-slate-200/50 shadow-xl flex flex-col rounded-2xl">
       <div className="p-2">
@@ -97,7 +98,7 @@ function QuickMatchSidePanel({ messages, message, setMessage, onSendMessage, onK
         </div>
       </div>
       <div className="flex-1 overflow-hidden bg-slate-100/50 rounded-b-lg">
-        <ChatPanel messages={messages} message={message} setMessage={setMessage} onSendMessage={onSendMessage} onKeyPress={onKeyPress} currentUserNickname={currentUser?.name} />
+        <ChatPanel messages={messages} message={message} setMessage={setMessage} onSendMessage={onSendMessage} onKeyDown={onKeyDown} currentUserNickname={currentUser?.name} />
       </div>
       <div className="p-4 border-t border-slate-200/80 flex-shrink-0 space-y-2">
         <Button size="lg" variant={currentUser?.isReady ? "destructive" : "default"} className={`w-full font-bold text-lg rounded-xl h-12 transition-all ${currentUser?.isReady ? 'bg-red-500 hover:bg-red-700' : 'bg-[#6dc4e8] hover:bg-[#5ab4d8]'} text-white`} onClick={onToggleReady} disabled={isLocked}>
@@ -158,15 +159,14 @@ function PlayerSlot({ player, isLeader, isCurrentUser, isWebcamEnabled, isMicEna
           {isCurrentUser ? (
             <>
               <div className="absolute inset-0 bg-black rounded-2xl overflow-hidden">
-                {isWebcamEnabled && localVideoRef ? (
-                  <video
-                    ref={localVideoRef}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    playsInline
-                    muted
-                  />
-                ) : (
+                <video
+                  ref={localVideoRef}
+                  className={`w-full h-full object-cover ${!isWebcamEnabled ? 'hidden' : ''}`}
+                  autoPlay
+                  playsInline
+                  muted
+                />
+                {!isWebcamEnabled && (
                   <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
                     <VideoOff className="w-12 h-12 text-white/60" />
                   </div>
@@ -259,7 +259,7 @@ function PlayerGrid({ players, roomLeaderId, isWebcamEnabled, isMicEnabled, onTo
   );
 }
 
-function ChatPanel({ messages, message, setMessage, onSendMessage, onKeyPress, currentUserNickname }: any) {
+function ChatPanel({ messages, message, setMessage, onSendMessage, onKeyDown, currentUserNickname }: any) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -295,7 +295,7 @@ function ChatPanel({ messages, message, setMessage, onSendMessage, onKeyPress, c
       </div>
       <div className="p-4 border-t border-slate-200/80 flex-shrink-0">
         <div className="flex gap-3">
-          <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} onKeyPress={onKeyPress} placeholder="메시지를 입력하세요" className="flex-1 bg-slate-100 border border-slate-300/80 rounded-lg px-4 py-2 text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#6dc4e8] transition-all" />
+          <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={onKeyDown} placeholder="메시지를 입력하세요" className="flex-1 bg-slate-100 border border-slate-300/80 rounded-lg px-4 py-2 text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#6dc4e8] transition-all" />
           <Button onClick={onSendMessage} disabled={!message.trim()} className="bg-[#6dc4e8] hover:bg-[#57b3d9] text-white font-bold transition-colors">
             <Send size={20} />
           </Button>

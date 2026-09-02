@@ -4,8 +4,8 @@ import { useUserLoginStore } from '@/domains/user/stores/userStore';
 import { API_BASE_URL } from '@/shared/services/api';
 
 class LiveKitService {
-  private baseURL: string;
-  private isDev: boolean;
+  private readonly baseURL: string;
+  private readonly isDev: boolean;
 
   constructor(baseURL: string = `${API_BASE_URL}/games`) {
     this.baseURL = baseURL;
@@ -39,8 +39,9 @@ class LiveKitService {
       throw new Error("사용자 정보를 찾을 수 없습니다.");
     }
 
+    let response;
     try {
-      const response = await axios.post(
+      response = await axios.post(
         `${this.baseURL}/livekit/token/${roomId}`,
         {},
         {
@@ -50,21 +51,20 @@ class LiveKitService {
           }
         }
       );
-      
-      const token = response.data.data.token;
-      if (!token) {
-        throw new Error('토큰이 응답에 포함되지 않았습니다.');
-      }
-      return token;
     } catch (error) {
       console.error('💥 LiveKit 토큰 요청 실패:', error);
-      console.error('  - 에러 타입:', typeof error);
-      console.error('  - 에러 메시지:', error);
       
       // 개발환경에서는 백엔드 실패 시 더미 토큰으로 폴백하지 않고 에러 발생
       // LiveKit 서버에서 유효한 토큰만 허용하므로
       throw new Error('LiveKit 토큰을 가져올 수 없습니다. 백엔드 서버를 확인하세요.');
     }
+
+    const token = response.data?.data?.token;
+    if (!token) {
+      throw new Error('토큰이 응답에 포함되지 않았습니다.');
+    }
+    
+    return token;
   }
 }
 

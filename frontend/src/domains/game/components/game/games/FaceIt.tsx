@@ -6,11 +6,6 @@ import { useIsPortrait } from "@/shared/ui/use-window-size";
 import { judgeGame } from "@/domains/game/services/gameService";
 import { useUserLoginStore } from "@/domains/user/stores/userStore";
 
-interface EmotionResult {
-  emotion: string;
-  confidence: number;
-}
-
 interface FaceItProps {
   targetEmotion?: string;
   timeLeft: number;
@@ -68,7 +63,6 @@ export const FaceIt: React.FC<FaceItProps> = ({
   // AI Emotion Recognition 로직을 직접 포함
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [gameResult, setGameResult] = useState<'pending' | 'analyzing' | 'waiting' | 'pass' | 'fail' | 'timeout'>('pending');
-  const [, setEmotionResult] = useState<EmotionResult | null>(null);
   const [aiResults, setAiResults] = useState<string>("");
   const [, setError] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -131,18 +125,21 @@ export const FaceIt: React.FC<FaceItProps> = ({
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       if (!context) {
-        throw new Error('Canvas context를 가져올 수 없습니다.');
-      }
+          setError('Canvas context를 가져올 수 없습니다.');
+          setGameResult('fail');
+          setIsAnalyzing(false);
+          return;
+        }
 
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
       context.drawImage(videoRef.current, 0, 0);
 
       // Blob으로 변환
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob);
+      const imageBlob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => {
+          if (b) {
+              resolve(b);
           } else {
             reject(new Error('이미지를 Blob으로 변환할 수 없습니다.'));
           }
@@ -158,13 +155,16 @@ export const FaceIt: React.FC<FaceItProps> = ({
         userId: userData?.memberUid || 0,
         request: {
           doEmotion: currentEmotion,
-          image: blob
+          image: imageBlob
         }
       });
       
       if (res.data?.result !== 'PASS') {
-        throw new Error(res.data?.error || '감정 분석에 실패했습니다.');
-      }
+          setError(res.data?.error || '감정 분석에 실패했습니다.');
+          setGameResult('fail');
+          setIsAnalyzing(false);
+          return;
+        }
       
       const isCorrect = res.data.result === 'PASS';
       const score = 100; // FaceIt doesn't return score percent right now
@@ -193,7 +193,7 @@ export const FaceIt: React.FC<FaceItProps> = ({
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.code === 'Space' && isGameActive && gameResult === 'waiting' && !isAnalyzing) {
         event.preventDefault();
-        analyzeEmotion();
+        void analyzeEmotion();
       }
     };
 

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { Camera, Mic, Video, X } from "lucide-react";
 import { useIsPortrait } from "@/shared/ui/use-window-size";
+import { judgeGame } from "@/domains/game/services/gameService";
+import { useUserLoginStore } from "@/domains/user/stores/userStore";
 
 interface ColorResult {
   closest_color: string;
@@ -14,6 +16,8 @@ interface ColorResult {
 
 interface ColorKillerProps {
   targetColor?: { r: number; g: number; b: number };
+  roomId?: number;
+  roundIdx?: number;
   timeLeft: number;
   videoRef?: React.RefObject<HTMLVideoElement>;
   isGameActive?: boolean;
@@ -48,8 +52,10 @@ export function ColorKiller({
   // isAudioEnabled = true,
   onToggleVideo,
   onToggleAudio,
-  participants = []
-}: ColorKillerProps) {
+  participants = [],
+  roomId,
+  roundIdx
+  }: ColorKillerProps) {
   const isPortrait = useIsPortrait();
   
   // AI Color Analysis 로직을 직접 포함
@@ -110,7 +116,11 @@ export function ColorKiller({
     try {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
-      if (!context) throw new Error('캔버스 컨텍스트를 가져올 수 없습니다.');
+      if (!context) {
+          setGameStatus('finished');
+          setIsAnalyzing(false);
+          return;
+        }
       
       const video = videoRef.current;
       canvas.width = video.videoWidth;
@@ -118,9 +128,9 @@ export function ColorKiller({
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       
       // FormData로 이미지 데이터 준비
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => {
-          if (blob) resolve(blob);
+      const imageBlob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((b) => {
+          if (b) resolve(b);
           else throw new Error('이미지 Blob을 생성할 수 없습니다.');
         }, 'image/jpeg', 0.8);
       });
@@ -132,7 +142,7 @@ export function ColorKiller({
         gameCode: 3,
         userId: userData?.memberUid || 0,
         request: {
-          image: blob,
+          image: imageBlob,
           r: currentColor.r,
           g: currentColor.g,
           b: currentColor.b
@@ -177,7 +187,7 @@ export function ColorKiller({
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.code === 'Space' && isGameActive && gameStatus === 'waiting' && !isAnalyzing) {
         event.preventDefault();
-        analyzeColor();
+        void analyzeColor();
       }
     };
 

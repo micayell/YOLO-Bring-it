@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { Screen, GameData, Player, RoundResult, GameType } from "@/shared/types/game";
 import { useUserLoginStore } from "@/domains/user/stores/userStore";
 import apiClient from "@/shared/services/api";
-import { PERFORMANCE_CONFIGS, GAME_CONFIG } from "@/shared/types/game";
+import { PERFORMANCE_CONFIGS, GAME_CONFIG, GAME_DETAILED_CONFIG } from "@/shared/types/game";
 
 // 백엔드 게임 코드를 프론트엔드 GameType으로 변환
 const gameCodeToType = (gameCode: number): GameType => {
@@ -22,26 +22,8 @@ const gameCodeToType = (gameCode: number): GameType => {
   return mapping[gameCode] || "bring_object"; // 기본값
 };
 
-// 프론트엔드 GameType을 백엔드 게임 코드로 변환
-const gameTypeToCode = (gameType: GameType): number => {
-  const mapping: Record<GameType, number> = {
-    "bring_object": 1,      // 물건 가져오기 → BringIt.tsx
-    "expression": 2,        // 감정 표현하기 → FaceIt.tsx
-    "color_similar": 3,     // 비슷한 색 가져오기 → ColorKiller.tsx
-    "drawing": 4,           // 그림 그리기 → ShowMeTheArt.tsx
-    "blink": 5,             // 눈싸움 → BlinkBattle.tsx
-    "famous_line": 6,       // 명대사 따라하기 → VoiceCrack.tsx
-    "forbidden_word": 7,    // 금지 단어 게임 → TrapWord.tsx
-    "timing_click": 8,      // 타이밍 게임 → TimeSniper.tsx
-    "quick_press": 9,       // 반응속도 게임 → TheFastestFinger.tsx
-    "headbanging": 10       // 플래피버드 → HeadBanging.tsx
-  };
-  
-  return mapping[gameType] || 1; // 기본값
-};
-
 // 변환 함수들을 export
-export { gameCodeToType, gameTypeToCode };
+export { gameCodeToType };
 
 export function useGameLogic() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("landing");
@@ -66,26 +48,6 @@ export function useGameLogic() {
       hasRefreshToken: !!refreshToken 
     });
     
-    // 자동 로그인 비활성화 - 필요시 수동으로 활성화 가능
-    // if (accessToken && refreshToken && !userData) {
-    //   console.log('🔄 localStorage에서 토큰 복원 중...');
-    //   setUser({
-    //     memberUid: 0,
-    //     email: '',
-    //     nickname: '',
-    //     accessToken,
-    //     refreshToken,
-    //     coin: 0,
-    //     score: 0,
-    //     xp: 0,
-    //     yoloScore: 0,
-    //     firstWinCnt: 0,
-    //     secondWinCnt: 0,
-    //     thirdWinCnt: 0,
-    //     useCoin: 0,
-    //     playCnt: 0
-    //   });
-    // }
   }, []); // 의존성 배열을 빈 배열로 변경 - 앱 시작 시에만 실행
 
   // 인증 관련 핸들러  
@@ -155,69 +117,77 @@ export function useGameLogic() {
       return;
     }
 
-    // if (gameMode === "quick" && players.length < 6) {
-    //   console.warn("⚠️ 빠른 매칭은 6명이 모여야 시작할 수 있습니다!");
-    //   // 여기에 사용자에게 알림을 보여주는 로직을 추가할 수 있습니다 (예: 토스트 메시지).
-    //   return;
-    // }
-
 // Bypass ready check - already handled by backend
 
     console.log("🏠 사용할 Room UID:", roomUid);
 
     // 임시로 폴백 모드로 전환 (백엔드 서버 500 오류로 인해)
     const fetchFirstGame = async () => {
-      try {
-        const accessToken = userData?.accessToken;
-        console.log('🔑 인증 토큰 확인:', accessToken ? '토큰 있음' : '토큰 없음');
-        console.log('👤 유저 데이터:', userData);
-        
-        if (!accessToken) {
-          console.error('❌ 첫 번째 라운드 게임 정보 조회 실패: 인증 토큰이 없습니다. 로그인이 필요합니다.');
-          return;
-        }
-        
-        // 게임 라운드 데이터 조회 (시작 처리는 대기실에서 이미 완료됨)
-        console.log('🔄 첫 번째 라운드 게임 정보 조회...');
-        const response = await apiClient.get(`/games/in-game-rounds/${roomUid}/1`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-MEMBER-UID': userData?.memberUid?.toString() || '',
-            'Authorization': `Bearer ${accessToken}`
+      let retryCount = 0;
+      const MAX_RETRIES = 5;
+      
+      while (retryCount < MAX_RETRIES) {
+        try {
+          const accessToken = userData?.accessToken;
+          console.log('🔑 인증 토큰 확인:', accessToken ? '토큰 있음' : '토큰 없음');
+          
+          if (!accessToken) {
+            console.error('❌ 첫 번째 라운드 게임 정보 조회 실패: 인증 토큰이 없습니다. 로그인이 필요합니다.');
+            return;
           }
-        });
+          
+          // 게임 라운드 데이터 조회 (시작 처리는 대기실에서 이미 완료됨)
+          console.log(`🔄 첫 번째 라운드 게임 정보 조회... (시도: ${retryCount + 1}/${MAX_RETRIES})`);
+          const response = await apiClient.get(`/games/in-game-rounds/${roomUid}/1`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-MEMBER-UID': userData?.memberUid?.toString() || '',
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
 
-        if (response.status !== 200) {
-          console.error('❌ 첫 번째 라운드 게임 정보 조회 실패: response.status != 200');
-          return;
+          if (response.status === 200) {
+            const gameInfo = response.data;
+            console.log('✅ 첫 번째 라운드 게임 정보:', gameInfo);
+
+             const mappedGameType = gameCodeToType(gameInfo.data.gameCode);
+             const newGameData: GameData = {
+               currentRound: 1,
+               totalRounds: gameRounds,
+               players: players.map(player => ({
+                 ...player,
+                 totalScore: 0,
+                 roundScores: []
+               })),
+               roundResults: [],
+               gameType: mappedGameType,
+               gameName: GAME_DETAILED_CONFIG[mappedGameType]?.title || "",
+               gameDescription: GAME_DETAILED_CONFIG[mappedGameType]?.description || "",
+               roomId: roomUid
+             };
+            
+            setGameData(newGameData);
+            setCurrentScreen("game");
+            console.log("✅ 게임 데이터 설정 완료", newGameData);
+            return; // 성공 시 함수 종료
+          } else {
+            console.warn(`⚠️ 조회 실패 (status: ${response.status})`);
+          }
+        } catch (error) {
+          console.warn(`⚠️ 라운드 정보 조회 중 오류:`, error);
         }
-
-        const gameInfo = response.data;
-        console.log('✅ 첫 번째 라운드 게임 정보:', gameInfo);
-
-         const newGameData: GameData = {
-           currentRound: 1,
-           totalRounds: gameRounds,
-           players: players.map(player => ({
-             ...player,
-             totalScore: 0,
-             roundScores: []
-           })),
-           roundResults: [],
-           gameType: gameCodeToType(gameInfo.data.gameCode), // 게임 코드를 GameType으로 변환
-           roomId: roomUid
-         };
         
-        setGameData(newGameData);
-        setCurrentScreen("game");
-        console.log("✅ 게임 데이터 설정 완료", newGameData);
-      } catch (error) {
-        console.error('❌ 첫 번째 라운드 게임 정보 조회 실패:', error);
+        retryCount++;
+        if (retryCount < MAX_RETRIES) {
+          console.log(`⏳ 1초 후 인게임 라운드 데이터를 다시 조회합니다...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
-
+      
+      console.error('❌ 최대 재시도 횟수를 초과했습니다. 게임을 시작할 수 없습니다.');
     };
 
-    fetchFirstGame();
+    void fetchFirstGame();
   };
 
   // 라운드 완료 핸들러
@@ -317,11 +287,14 @@ export function useGameLogic() {
 
         const gameInfo = response.data;
         console.log('🎮 다음 라운드 게임 정보:', gameInfo);
-
-         const updatedGameData = {
+        
+        const updatedGameType = gameCodeToType(gameInfo.data.gameCode);
+        const updatedGameData: GameData = {
            ...gameData,
            currentRound: nextRound,
-           gameType: gameCodeToType(gameInfo.data.gameCode) // 게임 코드를 GameType으로 변환
+           gameType: updatedGameType, // 게임 코드를 GameType으로 변환
+           gameName: GAME_DETAILED_CONFIG[updatedGameType]?.title || "",
+           gameDescription: GAME_DETAILED_CONFIG[updatedGameType]?.description || ""
          };
 
         setGameData(updatedGameData);
@@ -332,7 +305,7 @@ export function useGameLogic() {
       }
     };
 
-    fetchNextGame();
+    void fetchNextGame();
   };
 
   const handleGameEnd = () => {
@@ -388,22 +361,21 @@ export function useGameLogic() {
     isLoggedIn,
     gameData,
     gameMode,
-    setGameMode,
     gameRounds,
-    setGameRounds,
-    
-    // Screen handlers
-    setCurrentScreen,
+
+    // Handlers
+    handleLogin,
+    handleRegister,
+    handleLogout,
     handleEnterLobby,
     handleJoinGame,
     handleMatchmaking,
     handleBackToLobby,
     handleBackToGameJoin,
-    
-    // Auth handlers
-    handleLogin,
-    handleRegister,
-    handleLogout,
+    handleStartGame,
+    handleRoundComplete,
+    handleNextRound,
+    handleGameEnd,
     handleLoginClick,
     handleRegisterClick,
     handleCloseModal,
@@ -411,11 +383,5 @@ export function useGameLogic() {
     handleSwitchToRegister,
     handleSwitchToLogin,
     handleForgotPassword,
-    
-    // Game handlers
-    handleStartGame,
-    handleRoundComplete,
-    handleNextRound,
-    handleGameEnd
   };
 }

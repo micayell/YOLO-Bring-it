@@ -93,7 +93,7 @@ export const useLiveKitStore = create<LiveKitState>((set, get) => ({
   reset: () => {
     const { room } = get();
     if (room) {
-      room.disconnect();
+      void room.disconnect();
     }
     set(initialState);
   },

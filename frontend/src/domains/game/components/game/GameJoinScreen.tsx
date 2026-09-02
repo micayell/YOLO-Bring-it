@@ -1,6 +1,4 @@
 import { motion, AnimatePresence } from "framer-motion";
-// import imgFreeIconGlobalNetwork12794951 from "figma:asset/ecea2acf124fb276b0ea5fcab0ded7362e9c102c.png";
-// import imgFreeIconCustomization17998071 from "figma:asset/d39c4f44745b252a2fb6585cf3cf64e7259ab7ee.png";
 import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 

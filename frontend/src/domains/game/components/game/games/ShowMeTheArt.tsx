@@ -3,10 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/shared/ui/button";
 import { Palette, RotateCcw, Brush, Users, Camera } from "lucide-react";
 import { useIsPortrait } from "@/shared/ui/use-window-size";
+import { judgeGame } from "@/domains/game/services/gameService";
+import { useUserLoginStore } from "@/domains/user/stores/userStore";
 
 interface ShowMeTheArtProps {
-  videoRef: React.RefObject<HTMLVideoElement>;
-  isGameActive: boolean;
+  timeLeft: number;
+  roomId?: number;
+  roundIdx?: number;
+  videoRef?: React.RefObject<HTMLVideoElement>;
+  isGameActive?: boolean;
   onGameComplete: (success: boolean) => void;
   onGameEnd?: () => void;
   isVideoEnabled?: boolean;
@@ -35,7 +40,7 @@ const labelTranslations: Record<string, string> = {
 
 export const ShowMeTheArt: React.FC<ShowMeTheArtProps> = ({
   videoRef,
-  isGameActive,
+  isGameActive = true,
   onGameComplete,
   // onGameEnd,
   // isVideoEnabled = true,
@@ -44,7 +49,7 @@ export const ShowMeTheArt: React.FC<ShowMeTheArtProps> = ({
   // onToggleAudio,
   participants = [],
   roomId,
-  roundIdx
+  roundIdx,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -191,13 +196,13 @@ export const ShowMeTheArt: React.FC<ShowMeTheArtProps> = ({
       if (!canvas) return;
 
       // 캔버스를 Blob으로 변환
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
+      canvas.toBlob(async (b) => {
+        if (!b) return;
 
         // 캡처된 이미지를 base64로 저장(디버그/리뷰용)
         const reader = new FileReader();
         reader.onload = () => setCapturedImage(reader.result as string);
-        reader.readAsDataURL(blob);
+        reader.readAsDataURL(b);
 
         const { userData } = useUserLoginStore.getState();
         const res = await judgeGame({
@@ -207,7 +212,7 @@ export const ShowMeTheArt: React.FC<ShowMeTheArtProps> = ({
           userId: userData?.memberUid || 0,
           request: {
             targetPicture: currentPrompt,
-            image: blob
+            image: b
           }
         });
         const response = { ok: true, status: 200 };
@@ -240,7 +245,7 @@ export const ShowMeTheArt: React.FC<ShowMeTheArtProps> = ({
             setTimeout(() => onGameComplete(true), 2000);
           }
         } else {
-          throw new Error(`API 호출 실패: ${response.status}`);
+          console.error('API Error');
         }
       }, 'image/png');
     } catch (error) {
@@ -265,7 +270,7 @@ export const ShowMeTheArt: React.FC<ShowMeTheArtProps> = ({
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.code === 'Space' && gameStarted && !isSubmitting && !isCapturing) {
         e.preventDefault();
-        captureDrawing();
+        void captureDrawing();
       }
     };
 

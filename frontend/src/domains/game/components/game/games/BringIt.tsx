@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Camera, Mic, Video, X } from "lucide-react";
 import { useIsPortrait } from "@/shared/ui/use-window-size";
 // 💥 useGameWebSocket import 제거
@@ -51,7 +51,6 @@ export function BringIt({
   // AI Object Detection 로직을 직접 포함
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [gameResult, setGameResult] = useState<'waiting' | 'analyzing' | 'pass' | 'fail' | 'timeout'>('waiting');
-  const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([]);
   const [, setError] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -93,18 +92,21 @@ export function BringIt({
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       if (!context) {
-        throw new Error('Canvas context를 가져올 수 없습니다.');
-      }
+          setError('Canvas context를 가져올 수 없습니다.');
+          setGameResult('fail');
+          setIsAnalyzing(false);
+          return;
+        }
 
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
       context.drawImage(videoRef.current, 0, 0);
 
       // Blob으로 변환 (ObjectDetectForm.js와 동일한 방식)
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob);
+      const imageBlob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => {
+          if (b) {
+              resolve(b);
           } else {
             reject(new Error('이미지를 Blob으로 변환할 수 없습니다.'));
           }
@@ -120,7 +122,7 @@ export function BringIt({
         userId: userData?.memberUid || 0,
         request: {
           targetItem: targetObject,
-          image: blob
+          image: imageBlob
         }
       });
       
@@ -148,7 +150,7 @@ export function BringIt({
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.code === 'Space' && isGameActive && !isPortrait && gameResult !== 'pass') {
         event.preventDefault();
-        analyzeFrame();
+        void analyzeFrame();
       }
     };
 
@@ -384,16 +386,7 @@ export function BringIt({
             </AnimatePresence>
 
             {/* AI 분석 결과 표시 */}
-            {detectedObjects.length > 0 && !isAnalyzing && gameResult === 'waiting' && (
-              <div className="absolute bottom-20 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3">
-                <p className="text-sm font-bold text-gray-800 mb-2">감지된 물체:</p>
-                {detectedObjects.map((obj, index) => (
-                  <div key={index} className="text-sm text-green-600">
-                    {obj.label} ({(obj.confidence * 100).toFixed(1)}%)
-                  </div>
-                ))}
-              </div>
-                         )}
+            
 
              {/* 제시어 오버레이 */}
              <AnimatePresence>

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Video, X, Play, Square } from "lucide-react";
 import { useIsPortrait } from "@/shared/ui/use-window-size";
 import { useLocalWebRTC } from "@/domains/game/hooks/useLocalWebRTC";
+import { judgeGame } from "@/domains/game/services/gameService";
+import { useUserLoginStore } from "@/domains/user/stores/userStore";
 
 interface VoiceCrackProps {
   famousLine?: string;
@@ -16,6 +18,8 @@ interface VoiceCrackProps {
   onToggleVideo?: () => void;
   onToggleAudio?: () => void;
   participants?: any[];
+  roomId?: number;
+  roundIdx?: number;
 }
 
 interface AudioResult {
@@ -41,7 +45,9 @@ export function VoiceCrack({
   // isAudioEnabled: externalIsAudioEnabled = true,
   onToggleVideo: externalOnToggleVideo,
   onToggleAudio: externalOnToggleAudio,
-  participants = []
+  participants = [],
+  roomId,
+  roundIdx
 }: VoiceCrackProps) {
   const isPortrait = useIsPortrait();
   
@@ -118,7 +124,7 @@ export function VoiceCrack({
       setIsPlayingTargetAudio(true);
       
       // 제시 음성 재생 (실제로는 API에서 가져온 음성 파일)
-      playTargetAudio();
+      void playTargetAudio();
     }
   }, [isGameActive, isPromptShownOnce]);
 
@@ -171,10 +177,10 @@ export function VoiceCrack({
         audioChunksRef.current.push(event.data);
       };
 
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+      mediaRecorderRef.current.addEventListener('stop', () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         const ext = mimeType.includes('mp3') ? '.mp3' : '.webm';
-        const file = new File([blob], `voice_recording${ext}`, { type: mimeType });
+        const file = new File([audioBlob], `voice_recording${ext}`, { type: mimeType });
         setUserFile(file);
         setIsRecording(false);
         setRemainingTime(0);
@@ -182,7 +188,7 @@ export function VoiceCrack({
         
         // 녹음 완료 후 자동으로 분석 시작
         analyzeAudio(file);
-      };
+      });
 
       // 강제로 녹음 시작 (사용자 선택 불가)
       setIsRecording(true);
@@ -201,7 +207,7 @@ export function VoiceCrack({
       return () => clearTimeout(timer);
     } else if (countdown === 0 && gameStatus === 'countdown' && !isRecording) {
       // 카운트다운 완료 후 녹음 시작
-      startRecording();
+      void startRecording();
     }
   }, [countdown, gameStatus, isRecording, startRecording]);
 
@@ -256,13 +262,14 @@ export function VoiceCrack({
 
     try {
       // 실제 AI API 호출
-      const formData = new FormData();
       
       // 제시 음성 파일 가져오기
       const targetFile = await getTargetAudioFile();
       if (!targetFile) {
-        throw new Error('제시 음성 파일을 가져올 수 없습니다.');
-      }
+          setAudioError('제시 음성 파일을 가져올 수 없습니다.');
+          setGameStatus('finished');
+          return;
+        }
       
       const { userData } = useUserLoginStore.getState();
       const res = await judgeGame({
@@ -281,8 +288,10 @@ export function VoiceCrack({
 
       // AI 결과에 error가 있으면 에러로 처리
       if (result.error || !result.overall_score_percent) {
-        throw new Error(result.error || 'AI 분석 결과가 올바르지 않습니다.');
-      }
+          setAudioError(result.error || 'AI 분석 결과가 올바르지 않습니다.');
+          setGameStatus('finished');
+          return;
+        }
 
       const audioResult: AudioResult = {
         target_text: result.target_text || currentFamousLine,
@@ -326,7 +335,7 @@ export function VoiceCrack({
         setIsPromptShownOnce(false);
         setGameStatus('playing');
         setIsPlayingTargetAudio(true);
-        playTargetAudio();
+        void playTargetAudio();
       }
     };
 
@@ -655,7 +664,7 @@ export function VoiceCrack({
               setIsPromptShownOnce(false);
               setGameStatus('playing');
               setIsPlayingTargetAudio(true);
-              playTargetAudio();
+              void playTargetAudio();
             }}
             className={`px-8 py-4 rounded-full shadow-lg flex items-center gap-3 ${
               gameStatus === 'playing' || isRecording || isAnalyzing

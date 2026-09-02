@@ -23,7 +23,7 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [roomLeaderId, setRoomLeaderId] = useState<string | null>(null);
   const [canStartGame, setCanStartGame] = useState(false);
-  const effectRan = useRef(false);
+  const isRoomCreating = useRef(false);
 
   const fetchParticipants = useCallback(async (currentRoomId: number) => {
     if (!userData?.accessToken) return;
@@ -243,12 +243,12 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
         },
       });
       if (response.status < 200 || response.status >= 300) {
-        throw new Error(`Unexpected status code: ${response.status}`);
+        console.warn(`방 시작 상태 변경 에러 (status: ${response.status}). 이미 다른 유저가 시작했을 수 있습니다.`);
       }
       onStartGame(players, roomId);
     } catch (error) {
       console.error("게임 시작 중 오류 발생:", error);
-      toast.error('게임을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      onStartGame(players, roomId);
     }
   }, [roomId, canStartGame, userData, onStartGame, players]);
 
@@ -275,8 +275,7 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
   }, [roomId, onBack, userData?.accessToken]);
 
   useEffect(() => {
-    if (effectRan.current) return;
-    if (invitedRoomId) {
+    if (invitedRoomId && !roomId) {
       console.log(`✉️ 초대를 통해 방 ${invitedRoomId}에 입장합니다.`);
       setRoomId(invitedRoomId);
       setMessages([{
@@ -286,13 +285,11 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
         timestamp: new Date().toLocaleTimeString(),
         type: "system",
       }]);
-    } else if (userData?.accessToken) {
+    } else if (userData?.accessToken && !roomId && !isRoomCreating.current) {
+      isRoomCreating.current = true;
       createRoom();
     }
-    return () => {
-      effectRan.current = true;
-    };
-  }, [createRoom, userData?.accessToken, invitedRoomId]);
+  }, [createRoom, userData?.accessToken, invitedRoomId, roomId]);
 
   useEffect(() => {
     if (roomId) {

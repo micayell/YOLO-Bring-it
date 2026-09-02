@@ -45,7 +45,6 @@ export function CustomGameWaitingRoom({ onStartGame, onBack, invitedRoomId }: Cu
     handleKeyPress,
     handleToggleReady,
     handleInviteFriend,
-    handleStartGame,
     currentUser,
     handleLeaveRoom,
   } = useGameWaitingRoomLogic({ gameMode: "custom", onStartGame, onBack, invitedRoomId }); // 훅에 prop 전달
@@ -74,14 +73,13 @@ export function CustomGameWaitingRoom({ onStartGame, onBack, invitedRoomId }: Cu
               message={message}
               setMessage={setMessage}
               onSendMessage={handleSendMessage}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               onInviteFriend={handleInviteFriend}
               onToggleReady={handleToggleReady}
               currentUser={currentUser}
               isLocked={!roomId}
               gameMode="custom"
               canStartGame={canStartGame}
-              onStartGame={handleStartGame}
             />
           </div>
         </div>
@@ -139,15 +137,14 @@ function PlayerSlot({ player, isLeader, isCurrentUser, isWebcamEnabled, isMicEna
           {isCurrentUser ? (
             <>
               <div className="absolute inset-0 bg-black rounded-2xl overflow-hidden">
-                {isWebcamEnabled && localVideoRef ? (
-                  <video
-                    ref={localVideoRef}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    playsInline
-                    muted
-                  />
-                ) : (
+                <video
+                  ref={localVideoRef}
+                  className={`w-full h-full object-cover ${!isWebcamEnabled ? 'hidden' : ''}`}
+                  autoPlay
+                  playsInline
+                  muted
+                />
+                {!isWebcamEnabled && (
                   <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
                     <VideoOff className="w-12 h-12 text-white/60" />
                   </div>
@@ -238,7 +235,7 @@ function PlayerGrid({ players, roomLeaderId, isWebcamEnabled, isMicEnabled, onTo
     </div>
   );
 }
-function ChatPanel({ messages, message, setMessage, onSendMessage, onKeyPress, currentUserNickname }: any) {
+function ChatPanel({ messages, message, setMessage, onSendMessage, onKeyDown, currentUserNickname }: any) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -274,7 +271,7 @@ function ChatPanel({ messages, message, setMessage, onSendMessage, onKeyPress, c
       </div>
       <div className="p-4 border-t border-slate-200/80 flex-shrink-0">
         <div className="flex gap-3">
-          <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} onKeyPress={onKeyPress} placeholder="메시지를 입력하세요" className="flex-1 bg-slate-100 border border-slate-300/80 rounded-lg px-4 py-2 text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#6dc4e8] transition-all" />
+          <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={onKeyDown} placeholder="메시지를 입력하세요" className="flex-1 bg-slate-100 border border-slate-300/80 rounded-lg px-4 py-2 text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#6dc4e8] transition-all" />
           <Button onClick={onSendMessage} disabled={!message.trim()} className="bg-[#6dc4e8] hover:bg-[#57b3d9] text-white font-bold transition-colors">
             <Send size={20} />
           </Button>
@@ -318,7 +315,7 @@ function FriendListPanel({ friends, onInvite }: { friends: Friend[]; onInvite: (
   );
 }
 
-function SidePanelDesktop({ friends, messages, message, setMessage, onSendMessage, onKeyPress, onInviteFriend, onToggleReady, currentUser, isLocked, gameMode, canStartGame, onStartGame }: any) {
+function SidePanelDesktop({ friends, messages, message, setMessage, onSendMessage, onKeyDown, onInviteFriend, onToggleReady, currentUser, isLocked, gameMode, canStartGame }: any) {
   return (
     <Card className="w-full h-full bg-white/70 backdrop-blur-xl border-slate-200/50 shadow-xl flex flex-col rounded-2xl">
       <Tabs defaultValue="friends" className="w-full h-full flex flex-col">
@@ -336,19 +333,20 @@ function SidePanelDesktop({ friends, messages, message, setMessage, onSendMessag
           <FriendListPanel friends={friends} onInvite={onInviteFriend} />
         </TabsContent>
         <TabsContent value="chat" className="flex-1 overflow-hidden bg-slate-100/50 rounded-b-lg">
-          <ChatPanel messages={messages} message={message} setMessage={setMessage} onSendMessage={onSendMessage} onKeyPress={onKeyPress} currentUserNickname={currentUser?.name} />
+          <ChatPanel messages={messages} message={message} setMessage={setMessage} onSendMessage={onSendMessage} onKeyDown={onKeyDown} currentUserNickname={currentUser?.name} />
         </TabsContent>
       </Tabs>
       <div className="p-4 border-t border-slate-200/80 flex-shrink-0 space-y-2">
-        <Button size="lg" variant={currentUser?.isReady ? "destructive" : "default"} className={`w-full font-bold text-lg rounded-xl h-12 transition-all ${currentUser?.isReady ? 'bg-red-500 hover:bg-red-700' : 'bg-[#6dc4e8] hover:bg-[#5ab4d8]'} text-white`} onClick={onToggleReady} disabled={isLocked}>
-          {currentUser?.isReady ? "준비 취소" : "준비 완료"}
-        </Button>
-        {gameMode === 'quick' && (<p className="text-xs text-center text-slate-500 mt-2">6명이 모여야 시작할 수 있습니다.</p>)}
-         {canStartGame && (
-          <Button size="lg" className="w-full font-bold text-lg rounded-xl h-12 bg-green-500 hover:bg-green-600 text-white" onClick={onStartGame} disabled={!canStartGame}>
-            게임 시작
+        {!canStartGame ? (
+          <Button size="lg" variant={currentUser?.isReady ? "destructive" : "default"} className={`w-full font-bold text-lg rounded-xl h-12 transition-all ${currentUser?.isReady ? 'bg-red-500 hover:bg-red-700' : 'bg-[#6dc4e8] hover:bg-[#5ab4d8]'} text-white`} onClick={onToggleReady} disabled={isLocked}>
+            {currentUser?.isReady ? "준비 취소" : "준비 완료"}
+          </Button>
+        ) : (
+          <Button size="lg" className="w-full font-bold text-lg rounded-xl h-12 bg-green-500 text-white cursor-not-allowed opacity-90" disabled>
+            곧 게임이 시작됩니다...
           </Button>
         )}
+        {gameMode === 'quick' && !canStartGame && (<p className="text-xs text-center text-slate-500 mt-2">6명이 모여야 시작될 수 있습니다.</p>)}
       </div>
     </Card>
   );
