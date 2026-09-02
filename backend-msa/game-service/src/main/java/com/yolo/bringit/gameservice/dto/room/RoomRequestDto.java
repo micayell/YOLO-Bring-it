@@ -43,9 +43,16 @@ public class RoomRequestDto {
     }
 
     // 현재 방 인원 로스터
+        @Getter @Setter @Builder @AllArgsConstructor @NoArgsConstructor
+    public static class RoomMemberInfoDto {
+        private Long memberUid;
+        private String nickname;
+        private Boolean isReady;
+    }
+
     @Getter @Setter @Builder @AllArgsConstructor @NoArgsConstructor
     public static class RoomRosterDto {
         private Long roomId;
-        private List<ClientResponseDto.MemberSimpleInfo> members; // {memberUid, nickname, ...}
+        private List<RoomMemberInfoDto> members;
     }
 }

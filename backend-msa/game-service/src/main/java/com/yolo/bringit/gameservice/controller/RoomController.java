@@ -154,8 +154,17 @@ public class RoomController {
                 () -> userServiceClient.getActiveMemberInfoMap(ids).getData(),
                 ex -> new HashMap<>()
         );
-        List<ClientResponseDto.MemberSimpleInfo> roster = ids.stream()
-                .map(infoMap::get).filter(Objects::nonNull).toList();
+        
+        List<RoomRequestDto.RoomMemberInfoDto> roster = members.stream()
+                .filter(m -> infoMap.containsKey(m.getUserId()) && infoMap.get(m.getUserId()) != null)
+                .map(m -> {
+                    ClientResponseDto.MemberSimpleInfo info = infoMap.get(m.getUserId());
+                    return RoomRequestDto.RoomMemberInfoDto.builder()
+                            .memberUid(info.getMemberUid())
+                            .nickname(info.getNickname())
+                            .isReady(m.getIsReady())
+                            .build();
+                }).toList();
 
         return ResponseEntity.ok(RoomRequestDto.RoomRosterDto.builder().roomId(roomId).members(roster).build());
     }

@@ -300,16 +300,26 @@ public class RoomServiceImpl implements RoomService {
         CircuitBreaker cb = circuitBreakerFactory.create("circuitbreaker");
         Map<Long, ClientResponseDto.MemberSimpleInfo> infoMap = cb.run(
                 () -> userServiceClient.getActiveMemberInfoMap(memberIds).getData(),
-                ex -> new HashMap<>()
+                ex -> new java.util.HashMap<>()
         );
-        List<ClientResponseDto.MemberSimpleInfo> roster = memberIds.stream()
-                .map(infoMap::get)
-                .filter(Objects::nonNull)
-                .toList();
+        
+        List<RoomRequestDto.RoomMemberInfoDto> roster = members.stream()
+                .filter(m -> infoMap.containsKey(m.getUserId()) && infoMap.get(m.getUserId()) != null)
+                .map(m -> {
+                    ClientResponseDto.MemberSimpleInfo info = infoMap.get(m.getUserId());
+                    return RoomRequestDto.RoomMemberInfoDto.builder()
+                            .memberUid(info.getMemberUid())
+                            .nickname(info.getNickname())
+                            .isReady(m.getIsReady())
+                            .build();
+                }).toList();
 
         simpMessagingTemplate.convertAndSend(
                 "/topic/room/" + roomId + "/roster",
-                RoomRequestDto.RoomRosterDto.builder().roomId(roomId).members(roster).build()
+                RoomRequestDto.RoomRosterDto.builder()
+                        .roomId(roomId)
+                        .members(roster)
+                        .build()
         );
     }
 
