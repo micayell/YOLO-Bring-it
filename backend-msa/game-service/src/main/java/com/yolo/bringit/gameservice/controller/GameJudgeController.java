@@ -59,13 +59,13 @@ public class GameJudgeController {
                     return responseHandler.success(
                             aiService.checkPictureSimilarity(roomId, roundIdx, image, userId, targetPicture)
                     );
-////                case "5":
-////                    // Blink Battle
-                case "6": // Sound It!
-                    return responseHandler.success(
-                            aiService.checkVoiceSimilarity(roomId, roundIdx,
-                                    targetAudioPath, userAudioPath, userId, language)
-                    );
+//                case "5":
+//                    // Blink Battle
+//                case "6": // Sound It! (현재 AiService 미구현 컴파일 에러로 인해 임시 주석)
+//                    return responseHandler.success(
+//                            aiService.checkVoiceSimilarity(roomId, roundIdx,
+//                                    targetAudioPath, userAudioPath, userId, language)
+//                    );
 //                case "7":
 //                    // Trap Word
 //                case "8":
