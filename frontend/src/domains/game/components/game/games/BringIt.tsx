@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Camera, Mic, Video, X } from "lucide-react";
 import { useIsPortrait } from "@/shared/ui/use-window-size";
 // 💥 useGameWebSocket import 제거
+import { judgeGame } from "@/domains/game/services/gameService";
+import { useUserLoginStore } from "@/domains/user/stores/userStore";
 
 interface DetectedObject {
   label: string;
@@ -25,6 +27,7 @@ interface BringItProps {
   participants?: any[];
   // 웹소켓 관련 props
   roomId?: number;
+  roundIdx?: number;
   gameCode?: string;
 }
 
@@ -39,7 +42,9 @@ export function BringIt({
   // isAudioEnabled = true,
   onToggleVideo,
   onToggleAudio,
-  participants = []
+  participants = [],
+  roomId,
+  roundIdx
 }: BringItProps) {
   const isPortrait = useIsPortrait();
   
@@ -107,86 +112,29 @@ export function BringIt({
       });
 
       // FormData 생성 (ObjectDetectForm.js와 동일한 방식)
-      const formData = new FormData();
-      formData.append("file", blob, "capture.jpg");
-
-      // API 호출
-      const response = await fetch('http://i13C207.p.ssafy.io:8001/api/predict-object', {
-        method: 'POST',
-        body: formData,
+      const { userData } = useUserLoginStore.getState();
+      const res = await judgeGame({
+        roomId: roomId || 0,
+        roundIdx: roundIdx || 1,
+        gameCode: 1,
+        userId: userData?.memberUid || 0,
+        request: {
+          targetItem: targetObject,
+          image: blob
+        }
       });
-
-      if (!response.ok) {
-        throw new Error(`API 호출 실패: ${response.status} ${response.statusText}`);
-      }
-
-      const result = await response.json();
       
-      // ObjectDetectForm.js와 동일한 응답 구조 사용
-      if (result.results && result.results.length > 0) {
-        const objects = result.results.map((obj: { label: string; confidence: number }) => ({
-          label: obj.label,
-          confidence: obj.confidence
-        }));
-        
-        setDetectedObjects(objects);
-        
-        console.log('🎯 타겟 객체:', targetObject);
-        console.log('🔍 감지된 객체들:', objects);
-        
-        // 타겟 객체가 감지되었는지 확인 (한국어-영어 매칭)
-        const targetDetected = objects.some((obj: DetectedObject) => {
-          const objLabel = obj.label.toLowerCase();
-          const targetLabel = targetObject.toLowerCase();
-          
-          // 직접 매칭
-          if (objLabel.includes(targetLabel) || targetLabel.includes(objLabel)) {
-            return obj.confidence > 0.9; // 80% 이상으로 변경
-          }
-          
-          // 한국어-영어 매칭
-          const koreanToEnglish: { [key: string]: string[] } = {
-            '핸드폰': ['cell phone', 'mobile phone', 'phone', 'smartphone'],
-            '휴대폰': ['cell phone', 'mobile phone', 'phone', 'smartphone'],
-            '전화기': ['cell phone', 'mobile phone', 'phone', 'telephone'],
-            '노트북': ['laptop', 'computer', 'notebook'],
-            '컴퓨터': ['laptop', 'computer', 'desktop'],
-            '책상': ['desk', 'table'],
-            '의자': ['chair', 'seat'],
-            '컵': ['cup', 'glass', 'mug'],
-            '물': ['water', 'bottle'],
-            '키보드': ['keyboard'],
-            '마우스': ['mouse'],
-            '모니터': ['monitor', 'screen', 'tv'],
-            '가방': ['bag', 'handbag', 'backpack'],
-            '책': ['book'],
-            '펜': ['pen', 'pencil'],
-          };
-          
-          const englishTargets = koreanToEnglish[targetLabel] || [];
-          const isMatch = englishTargets.some(english => objLabel.includes(english)) && obj.confidence > 0.9; // 80% 이상으로 변경
-          
-          if (isMatch) {
-            console.log('✅ 매칭 성공:', objLabel, '←', targetLabel, '(', englishTargets.join(', '), ')', '정확도:', (obj.confidence * 100).toFixed(1) + '%');
-          }
-          
-          return isMatch;
-        });
-        
-        console.log('🎯 최종 결과:', targetDetected ? '성공' : '실패');
-
-        if (targetDetected) {
+      const targetDetected = res.data?.result === 'PASS';
+      
+      if (targetDetected) {
           setGameResult('pass');
           const score = Math.floor((timeLeft / 60) * 100); // 남은 시간에 비례한 점수
-          onGameComplete?.(true, objects, score); // 💥 성공 시 점수와 함께 onGameComplete 호출
+          onGameComplete?.(true, [], score); // 💥 성공 시 점수와 함께 onGameComplete 호출
         } else {
           setGameResult('fail');
           // fail일 때는 onGameComplete를 호출하지 않음 (계속 시도 가능)
         }
-      } else {
-        setGameResult('fail');
-      }
-    } catch (error) {
+      } catch (error) {
       console.error('AI 분석 오류:', error);
       setError(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
       setGameResult('fail');

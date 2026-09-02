@@ -125,17 +125,20 @@ export function ColorKiller({
         }, 'image/jpeg', 0.8);
       });
       
-      const formData = new FormData();
-      formData.append('file', blob, 'capture.jpg');
-      
-      // 원격 AI 서버 API 호출
-      const response = await fetch(`http://i13C207.p.ssafy.io:8001/api/color-closest?r=${currentColor.r}&g=${currentColor.g}&b=${currentColor.b}`, {
-        method: 'POST',
-        body: formData,
+      const { userData } = useUserLoginStore.getState();
+      const res = await judgeGame({
+        roomId: roomId || 0,
+        roundIdx: roundIdx || 1,
+        gameCode: 3,
+        userId: userData?.memberUid || 0,
+        request: {
+          image: blob,
+          r: currentColor.r,
+          g: currentColor.g,
+          b: currentColor.b
+        }
       });
-      
-      if (!response.ok) throw new Error(`API 호출 실패: ${response.status} ${response.statusText}`);
-      const result = await response.json();
+      const result = res.data;
       
       console.log('🎨 ColorKiller AI 분석 결과:', result);
       

@@ -42,7 +42,7 @@ export function BlinkBattle({
       return;
     }
 
-    const newSocket = io("http://i13c207.p.ssafy.io:8001", { // 원격 AI 서버 연결
+    const newSocket = io('http://localhost:8001' /* FIXME: AI_API_BASE_URL was removed, BlinkBattle socket needs backend support */, { // 원격 AI 서버 연결
       transports: ['websocket'],
       reconnection: true,
       reconnectionAttempts: 5,

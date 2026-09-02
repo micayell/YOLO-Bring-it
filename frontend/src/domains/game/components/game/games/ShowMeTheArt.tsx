@@ -42,7 +42,9 @@ export const ShowMeTheArt: React.FC<ShowMeTheArtProps> = ({
   // isAudioEnabled = true,
   // onToggleVideo,
   // onToggleAudio,
-  participants = []
+  participants = [],
+  roomId,
+  roundIdx
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -197,17 +199,20 @@ export const ShowMeTheArt: React.FC<ShowMeTheArtProps> = ({
         reader.onload = () => setCapturedImage(reader.result as string);
         reader.readAsDataURL(blob);
 
-        const formData = new FormData();
-        formData.append('file', blob, 'drawing.png');
-        formData.append('text', currentPrompt);
-
-        const response = await fetch('http://i13c207.p.ssafy.io:8001/api/clip-multi-similarity', {
-          method: 'POST',
-          body: formData,
+        const { userData } = useUserLoginStore.getState();
+        const res = await judgeGame({
+          roomId: roomId || 0,
+          roundIdx: roundIdx || 1,
+          gameCode: 4,
+          userId: userData?.memberUid || 0,
+          request: {
+            targetPicture: currentPrompt,
+            image: blob
+          }
         });
-
+        const response = { ok: true, status: 200 };
         if (response.ok) {
-          const result = await response.json();
+          const result = res.data;
           console.log('🎨 AI 분석 결과:', result);
 
           if (result.scores && result.best_match && result.best_score_percent) {

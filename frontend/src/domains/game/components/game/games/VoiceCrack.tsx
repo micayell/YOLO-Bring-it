@@ -264,23 +264,19 @@ export function VoiceCrack({
         throw new Error('제시 음성 파일을 가져올 수 없습니다.');
       }
       
-      formData.append("target_file", targetFile);
-      formData.append("user_file", file);
-
-      console.log('🎤 AI API 호출 시작...');
-      console.log('📁 제시 파일:', targetFile.name);
-      console.log('📁 사용자 파일:', file.name);
-      
-      const response = await fetch('http://i13C207.p.ssafy.io:8001/api/audio-similarity?language=ko-KR', {
-        method: 'POST',
-        body: formData,
+      const { userData } = useUserLoginStore.getState();
+      const res = await judgeGame({
+        roomId: roomId || 0,
+        roundIdx: roundIdx || 1,
+        gameCode: 6,
+        userId: userData?.memberUid || 0,
+        request: {
+          language: 'ko-KR',
+          userAudioPath: file,
+          targetAudioPath: targetFile
+        }
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = res.data;
       console.log('✅ AI 분석 결과:', result);
 
       // AI 결과에 error가 있으면 에러로 처리

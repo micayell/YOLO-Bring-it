@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { Camera, Mic, Video, X } from "lucide-react";
 import { useIsPortrait } from "@/shared/ui/use-window-size";
+import { judgeGame } from "@/domains/game/services/gameService";
+import { useUserLoginStore } from "@/domains/user/stores/userStore";
 
 interface EmotionResult {
   emotion: string;
@@ -21,6 +23,8 @@ interface FaceItProps {
   onToggleVideo?: () => void;
   onToggleAudio?: () => void;
   participants?: any[];
+  roomId?: number;
+  roundIdx?: number;
 }
 
 const emotionPrompts = [
@@ -55,7 +59,9 @@ export const FaceIt: React.FC<FaceItProps> = ({
   // isAudioEnabled = true,
   onToggleVideo,
   onToggleAudio,
-  participants = []
+  participants = [],
+  roomId,
+  roundIdx
 }) => {
   const isPortrait = useIsPortrait();
   
@@ -144,55 +150,24 @@ export const FaceIt: React.FC<FaceItProps> = ({
       });
 
       // FormData로 전송
-      const formData = new FormData();
-      formData.append('file', blob, 'emotion.jpg');
-
-      // API 호출
-      const response = await fetch('http://i13C207.p.ssafy.io:8001/api/analyze-emotion-nobg', {
-        method: 'POST',
-        body: formData,
+      const { userData } = useUserLoginStore.getState();
+      const res = await judgeGame({
+        roomId: roomId || 0,
+        roundIdx: roundIdx || 1,
+        gameCode: 2,
+        userId: userData?.memberUid || 0,
+        request: {
+          doEmotion: currentEmotion,
+          image: blob
+        }
       });
-
-      if (!response.ok) {
-        throw new Error(`API 호출 실패: ${response.status}`);
-      }
-
-      const result = await response.json();
       
-      if (result.success === false) {
-        throw new Error(result.message || '감정 분석에 실패했습니다.');
+      if (res.data?.result !== 'PASS') {
+        throw new Error(res.data?.error || '감정 분석에 실패했습니다.');
       }
       
-      if (result.dominant_emotion && result.emotion_scores) {
-        // 가장 높은 점수의 감정 찾기
-        const dominantEmotion = result.dominant_emotion;
-        const emotionScores = result.emotion_scores;
-        const scores = Object.values(emotionScores) as number[];
-        const maxScore = Math.max(...scores);
-        
-        const emotion = {
-          emotion: dominantEmotion,
-          confidence: maxScore / 100 // 백분율을 0-1 범위로 변환
-        };
-        
-        setEmotionResult(emotion);
-        
-        // 타겟 감정과 일치하는지 확인 (한국어 감정명 매핑)
-        const emotionMapping: Record<string, string[]> = {
-          "행복": ["happy", "joy", "행복", "기쁨"],
-          "슬픔": ["sad", "sadness", "슬픔", "우울"],
-          "화남": ["angry", "anger", "화남", "분노"],
-          "놀람": ["surprise", "surprised", "놀람", "놀라움"],
-          "무서움": ["fear", "scared", "무서움", "두려움"],
-          "역겨움": ["disgust", "disgusted", "역겨움", "혐오"],
-          "무표정": ["neutral", "무표정", "중립"]
-        };
-        
-        const targetEmotions = emotionMapping[currentEmotion] || [currentEmotion];
-        const isCorrect = targetEmotions.some((target: string) => 
-          dominantEmotion.toLowerCase().includes(target.toLowerCase())
-        );
-        const score = Math.floor(maxScore);
+      const isCorrect = res.data.result === 'PASS';
+      const score = 100; // FaceIt doesn't return score percent right now
         
         // AI 분석 완료 후 대기 상태로 변경
         setGameResult('waiting');
@@ -201,9 +176,6 @@ export const FaceIt: React.FC<FaceItProps> = ({
         setTimeout(() => {
           onGameComplete?.(isCorrect);
         }, 2000);
-      } else {
-        throw new Error('감정 분석 결과가 없습니다.');
-      }
     } catch (error) {
       console.error('AI 감정 분석 오류:', error);
       setError(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');

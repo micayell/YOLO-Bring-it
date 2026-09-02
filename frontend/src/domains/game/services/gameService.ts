@@ -1,25 +1,23 @@
 import apiClient from '@/shared/services/api';
 
-// 각 게임별 요청 파라미터 타입을 명시적으로 정의
 export type GameRequest = {
   // Bring It!
-  1: { imagePath: string; targetItem: string };
+  1: { image?: Blob; targetItem: string };
   // Face It!
-  2: { imagePath: string; doEmotion: string };
+  2: { image?: Blob; doEmotion: string };
   // Color Killer
-  3: { imagePath: string; r: string; g: string; b: string };
+  3: { image?: Blob; r: number; g: number; b: number };
   // Draw It!
-  4: { imagePath: string; targetPicture: string };
+  4: { image?: Blob; targetPicture: string };
   // Sound It!
-  6: { imagePath: string; targetAudioPath: string; userAudioPath: string; language: string };
+  6: { targetAudioPath?: Blob; userAudioPath?: Blob; language: string };
 };
 
-// 제네릭을 사용하여 gameCode에 따라 request 타입이 결정되도록 설정
 interface JudgeGameParams<T extends keyof GameRequest> {
-  roomId: number;
-  roundIdx: number;
+  roomId: number | string;
+  roundIdx: number | string;
   gameCode: T;
-  userId: number;
+  userId: number | string;
   request: GameRequest[T];
 }
 
@@ -31,14 +29,28 @@ export const judgeGame = async <T extends keyof GameRequest>({
   request,
 }: JudgeGameParams<T>) => {
   try {
+    const formData = new FormData();
+    
+    // Convert request payload into FormData
+    Object.entries(request).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (value instanceof Blob) {
+          const extension = value.type.includes('audio') ? 'webm' : 'jpg';
+          formData.append(key, value, `upload.${extension}`);
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+    });
+
     const response = await apiClient.post(
       `/games/game-judges/${roomId}/${roundIdx}/${gameCode}`,
-      null, // request body
+      formData,
       {
         headers: {
-          'X-MEMBER-UID': userId,
+          'X-MEMBER-UID': String(userId),
+          'Content-Type': 'multipart/form-data',
         },
-        params: request, // query parameters
       }
     );
     return response.data;
