@@ -11,6 +11,10 @@ export type GameRequest = {
   4: { image?: Blob; targetPicture: string };
   // Sound It!
   6: { targetAudioPath?: Blob; userAudioPath?: Blob; language: string };
+  // Time It!
+  8: { diffSeconds: number };
+  // Finger It!
+  9: { reactionTime: number };
 };
 
 interface JudgeGameParams<T extends keyof GameRequest> {
@@ -30,6 +34,7 @@ export const judgeGame = async <T extends keyof GameRequest>({
 }: JudgeGameParams<T>) => {
   try {
     const formData = new FormData();
+    const params = new URLSearchParams();
     
     // Convert request payload into FormData
     Object.entries(request).forEach(([key, value]) => {
@@ -38,13 +43,17 @@ export const judgeGame = async <T extends keyof GameRequest>({
           const extension = value.type.includes('audio') ? 'webm' : 'jpg';
           formData.append(key, value, `upload.${extension}`);
         } else {
-          formData.append(key, String(value));
+          // 멀티파트 한글 깨짐 방지를 위해 문자열은 URL 파라미터로 넘깁니다.
+          params.append(key, String(value));
         }
       }
     });
 
+    const queryString = params.toString();
+    const url = `/games/game-judges/${roomId}/${roundIdx}/${gameCode}${queryString ? '?' + queryString : ''}`;
+
     const response = await apiClient.post(
-      `/games/game-judges/${roomId}/${roundIdx}/${gameCode}`,
+      url,
       formData,
       {
         headers: {

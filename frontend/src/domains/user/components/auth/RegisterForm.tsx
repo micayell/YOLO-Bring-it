@@ -13,7 +13,7 @@ interface RegisterFormProps {
   onSwitchToLogin: () => void;
 }
 
-export function RegisterForm({ onRegister, onClose, onSwitchToLogin }: RegisterFormProps) {
+export function RegisterForm({ onClose, onSwitchToLogin }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

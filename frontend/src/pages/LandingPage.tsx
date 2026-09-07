@@ -258,7 +258,7 @@ export function LandingPage({
                 style={{
                   left: '50%',
                   top: '50%',
-                  transform: `rotate(${i * 30}deg) translateX(clamp(140px, 22vw, 280px))`,
+                  transform: `rotate(${i * 30}deg) translatex(clamp(140px, 22vw, 280px))`,
                 }}
               >
                 {/* 2. 안쪽 div: 제자리에서 흔들리는 애니메이션과 스타일 담당 */}
