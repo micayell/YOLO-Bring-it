@@ -1,183 +1,3 @@
-// import { motion, AnimatePresence } from "framer-motion";
-// import { LoginForm } from "@/domains/user/components/auth/LoginForm";
-// import { RegisterForm } from "@/domains/user/components/auth/RegisterForm";
-// import { ForgotPasswordForm } from "@/domains/user/components/auth/ForgotPasswordForm";
-// import { LobbyScreen } from "@/domains/game/components/lobby/LobbyView";
-// import { GameJoinScreen } from "@/domains/game/components/game/GameJoinScreen";
-// import { GameWaitingRoom } from "@/pages/GameWaitingRoom";
-// import { GameScreen } from "@/domains/game/components/game/GameScreen";
-// import { RoundResultScreen } from "@/domains/game/components/result/RoundResultScreen";
-// import { FinalResultScreen } from "@/domains/game/components/result/FinalResultScreen";
-// import { LandingPage } from "@/pages/LandingPage";
-// import { ThemeProvider } from "@/shared/lib/ThemeContext";
-// import { useGameLogic } from "@/domains/game/hooks/useGameLogic";
-// import { useTokenRefresher } from "../hooks/useTokenRefresher.ts"; // 토큰 재발급용 훅
-// import { ChatModalWrapper } from "@/domains/chat/components/chats/ChatModalWrapper";
-
-// export type { GameData, Player, RoundResult, PlayerRanking } from "@/shared/types/game";
-
-// function AppContent() {
-//   const {
-//     currentScreen,
-//     isLoggedIn,
-//     gameData,
-//     handleEnterLobby,
-//     handleJoinGame,
-//     handleMatchmaking,
-//     handleBackToLobby,
-//     handleBackToGameJoin,
-//     handleLogin,
-//     handleRegister,
-//     handleLogout,
-//     handleLoginClick,
-//     handleRegisterClick,
-//     handleCloseModal,
-//     handleBackToLogin,
-//     handleSwitchToRegister,
-//     handleSwitchToLogin,
-//     handleForgotPassword,
-//     handleStartGame,
-//     handleRoundComplete,
-//     handleNextRound,
-//     handleGameEnd
-//   } = useGameLogic();
-
-//   useTokenRefresher();
-
-//   // 게임 플로우 화면들만 렌더링 (랜딩 페이지 제외)
-//   const renderGameScreens = () => {
-//     switch (currentScreen) {
-//       case "lobby":
-//         return <LobbyScreen onLogout={handleLogout} onStartGame={handleJoinGame} />;
-//       case "game-join":
-//         return <GameJoinScreen onMatchmaking={handleMatchmaking} onBack={handleBackToLobby} />;
-//       case "waiting-room":
-//         return <GameWaitingRoom onStartGame={handleStartGame} onBack={handleBackToGameJoin} gameMode={gameData?.mode || 'custom'} />;
-//       case "game":
-//         return gameData ? <GameScreen gameData={gameData} roomId={gameData.roomId} onRoundComplete={handleRoundComplete} onGameEnd={handleGameEnd} /> : null;
-//       case "round-result":
-//         return gameData ? <RoundResultScreen gameData={gameData} onNextRound={handleNextRound} onGameEnd={handleGameEnd} /> : null;
-//       case "final-result":
-//         return gameData ? <FinalResultScreen gameData={gameData} onGameEnd={handleGameEnd} /> : null;
-//       default:
-//         return null;
-//     }
-//   };
-
-//   // 게임 플로우 화면들 (로비부터 게임 끝까지)
-//   const gameScreenContent = renderGameScreens();
-  
-//   // 게임 플로우가 활성화된 경우에만 해당 화면들 표시
-//   if (gameScreenContent) {
-//     return (
-//       <div className="h-screen w-full font-optimized bg-background overflow-hidden">
-//         <AnimatePresence mode="wait">
-//           <motion.div
-//             key={currentScreen}
-//             initial={{ opacity: 0, scale: 0.95 }}
-//             animate={{ opacity: 1, scale: 1 }}
-//             exit={{ opacity: 0, scale: 1.05 }}
-//             transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-//             className="h-full w-full"
-//             style={{ 
-//               maxWidth: "100vw",
-//               fontSize: "var(--text-base)",
-//               fontWeight: "var(--font-weight-normal)",
-//               lineHeight: "1.5"
-//             }}
-//           >
-//             {gameScreenContent}
-//           </motion.div>
-//         </AnimatePresence>
-
-//         {/* 모달들 - 게임 화면에서도 표시 */}
-//         <AnimatePresence>
-//           {currentScreen === "login" && (
-//             <LoginForm 
-//               onLogin={handleLogin}
-//               onClose={handleCloseModal}
-//               onSwitchToRegister={handleSwitchToRegister}
-//               onForgotPassword={handleForgotPassword}
-//             />
-//           )}
-//           {currentScreen === "register" && (
-//             <RegisterForm 
-//               onRegister={handleRegister}
-//               onClose={handleCloseModal}
-//               onSwitchToLogin={handleSwitchToLogin}
-//             />
-//           )}
-//           {currentScreen === "forgot-password" && (
-//             <ForgotPasswordForm 
-//               onClose={handleCloseModal}
-//               onBackToLogin={handleBackToLogin}
-//             />
-//           )}
-//         </AnimatePresence>
-//       </div>
-//     );
-//   }
-
-//     // 기본적으로 랜딩 페이지와 모달들 표시
-//   return (
-//     <div 
-//       className="font-optimized min-h-screen bg-background relative"
-//       style={{
-//         fontSize: "var(--text-base)",
-//         fontWeight: "var(--font-weight-normal)", 
-//         lineHeight: "1.5",
-//         maxWidth: "100vw",
-//         overflowX: "hidden"
-//       }}
-//     >
-//       <LandingPage
-//         isLoggedIn={isLoggedIn}
-//         onLoginClick={handleLoginClick}
-//         onRegisterClick={handleRegisterClick}
-//         onLogout={handleLogout}
-//         onGameStart={handleEnterLobby}
-//       />
-
-//       <AnimatePresence>
-//         {currentScreen === "login" && (
-//           <LoginForm 
-//             onLogin={handleLogin}
-//             onClose={handleCloseModal}
-//             onSwitchToRegister={handleSwitchToRegister}
-//             onForgotPassword={handleForgotPassword}
-//           />
-//         )}
-//         {currentScreen === "register" && (
-//           <RegisterForm 
-//             onRegister={handleRegister}
-//             onClose={handleCloseModal}
-//             onSwitchToLogin={handleSwitchToLogin}
-//           />
-//         )}
-//         {currentScreen === "forgot-password" && (
-//           <ForgotPasswordForm 
-//             onClose={handleCloseModal}
-//             onBackToLogin={handleBackToLogin}
-//           />
-//         )}
-//       </AnimatePresence>
-//     </div>
-//   );
-// }
-
-// export default function App() {
-//   return (
-//     <ThemeProvider>
-//       <AppContent />
-//       <ChatModalWrapper />
-//     </ThemeProvider>
-//   );
-// }
-
-
-
-
-// src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
@@ -203,45 +23,6 @@ import { useGlobalWebSocket } from "@/app/hooks/useGlobalWebSocket"; // 전역 �
 export type { GameData, Player, RoundResult, PlayerRanking } from "@/shared/types/game";
 import type { Player } from "@/shared/types/game";
 
-// 게임 디자인 수정을 위한 개별 라우터 설정
-// import { BringIt } from "@/domains/game/components/game/games"
-// import { ColorKiller } from "@/domains/game/components/game/games"
-// import { FaceIt } from "@/domains/game/components/game/games";
-// import { ShowMeTheArt } from "@/domains/game/components/game/games";
-// import { TheFastestFinger } from "@/domains/game/components/game/games";
-import { VoiceCrack } from "@/domains/game/components/game/games/VoiceCrack"; // 경로 맞게 조정
-
-
-import { useState, useEffect } from 'react'
-
-function BringItRoute() {
-  const [timeLeft, setTimeLeft] = useState(90);
-  const [isActive, setIsActive] = useState(true);
-
-  useEffect(() => {
-    if (!isActive) return;
-    const id = setInterval(() => {
-      setTimeLeft((t) => (t <= 1 ? 0 : t - 1));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [isActive]);
-
-  const handleGameEnd = () => setIsActive(false);
-  const handleGameComplete = () => {
-    // 필요 시 결과 처리
-  };
-
-  return (
-    <VoiceCrack
-      timeLeft={timeLeft}
-      isGameActive={isActive}
-      onGameEnd={handleGameEnd}
-      onGameComplete={handleGameComplete}
-      participants={[]} // 필요 시 참가자 데이터 주입
-    />
-  );
-}
-
 
 // --- 로그인 보호용 래퍼 ---
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
@@ -253,7 +34,6 @@ function ProtectedRoute({ children }: { children: React.ReactElement }) {
   return children;
 }
 
-// --- 라우팅된 화면에서 기존 콜백을 네비게이션으로 매핑 ---
 function LobbyRoute() {
   const { handleLogout } = useGame();
   const navigate = useNavigate();
@@ -287,7 +67,8 @@ function WaitingRoomRoute() {
   const [params] = useSearchParams();
 
   const mode = (params.get("mode") as "quick" | "custom") ?? "custom";
-  const invitedRoomId = params.get("roomId"); // 초대받은 roomId 읽기
+  const existingRoomId = params.get("roomId"); // 초대받은 roomId 읽기
+  const rounds = params.get("rounds") ? Number(params.get("rounds")) : 5;
 
   const handleGameStart = (players: Player[], roomUid: number) => {
     console.log("🎮 App.tsx: 게임 시작 - 네비게이션 시작");
@@ -299,6 +80,7 @@ function WaitingRoomRoute() {
       <QuickMatchWaitingRoom
         onStartGame={handleGameStart}
         onBack={() => navigate("/join")}
+        existingRoomId={existingRoomId ? Number(existingRoomId) : undefined}
       />
     );
   }
@@ -307,7 +89,8 @@ function WaitingRoomRoute() {
     <CustomGameWaitingRoom
       onStartGame={handleGameStart}
       onBack={() => navigate("/join")}
-      invitedRoomId={invitedRoomId ? Number(invitedRoomId) : undefined} // roomId 전달
+      existingRoomId={existingRoomId ? Number(existingRoomId) : undefined} // roomId 전달
+      rounds={rounds}
     />
   );
 }
@@ -347,6 +130,7 @@ function GameFlowScreens() {
             roomId={gameData.roomId}
             onRoundComplete={handleRoundComplete}
             onGameEnd={handleGameEnd}
+            onNextRound={handleNextRound}
           />
         ) : null;
       case "round-result":
@@ -361,7 +145,14 @@ function GameFlowScreens() {
         return gameData ? (
           <FinalResultScreen
             gameData={gameData}
-            onGameEnd={handleGameEnd}
+            onGameEnd={() => {
+              handleGameEnd();
+              navigate("/lobby"); // 로비로 명시적 이동
+            }}
+            onRestartGame={() => {
+              handleGameEnd();
+              navigate("/waiting"); // 대기방으로 돌아가서 다시 게임 준비
+            }}
             roomId={gameData.roomId.toString()}
           />
         ) : null;
@@ -457,15 +248,7 @@ function AppRoutes() {
       {/* ⭐ 비밀번호 재설정(메일 링크) - 비보호 라우트 */}
       <Route path="/reset-password" element={<ResetPasswordRoute />} />
 
-      {/* 게임 라우터 */}
-        <Route
-          path="/bringit"
-          element={
-            <ProtectedRoute>
-              <BringItRoute />
-            </ProtectedRoute>
-          }
-        />
+
 
       {/* 보호 라우트들 */}
       <Route
@@ -493,14 +276,7 @@ function AppRoutes() {
         }
       />
 
-      <Route
-        path="/reset-password"
-        element={
-          <ProtectedRoute>
-            <ResetPasswordRoute />
-          </ProtectedRoute>
-        }
-      />
+
       {/* 그 외는 홈으로 */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
