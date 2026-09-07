@@ -68,10 +68,10 @@ export function GameJoinScreen({ onBack, onMatchmaking }: GameJoinScreenProps) {
           }}
         >
           <motion.div
-            className="relative w-full 
-              h-[120px] sm:h-[140px] 
-              md:h-[400px] lg:h-[450px] xl:h-[500px]
-              bg-[rgba(255,191,239,0.53)] 
+            className="group relative w-full
+                      h-[120px] sm:h-[140px]
+                      md:h-[400px] lg:h-[450px] xl:h-[500px]
+                      bg-[rgba(255,191,239,0.53)] 
               rounded-[15px] sm:rounded-[20px] md:rounded-[25px] lg:rounded-[35px] xl:rounded-[45px] 
               border-3 sm:border-4 md:border-5 lg:border-6 xl:border-7 
               border-[#6dc4e8] overflow-hidden cursor-pointer shadow-xl md:shadow-2xl"
@@ -101,7 +101,7 @@ export function GameJoinScreen({ onBack, onMatchmaking }: GameJoinScreenProps) {
                 }}
               >
                 <motion.div
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-28 lg:h-28 xl:w-32 xl:h-32 bg-center bg-cover bg-no-repeat bg-gradient-to-br from-[#6dc4e8] to-[#5ab4d8] rounded-full flex items-center justify-center text-white text-2xl"
+                  className="flex items-center justify-center text-[4rem] sm:text-[5rem] md:text-[7rem] lg:text-[9rem] xl:text-[11rem] drop-shadow-xl"
                   // style={{ backgroundImage: `url('${imgFreeIconGlobalNetwork12794951}')` }} // 주석 처리
                   animate={{
                     rotate: [0, 360],
@@ -144,10 +144,10 @@ export function GameJoinScreen({ onBack, onMatchmaking }: GameJoinScreenProps) {
                 </motion.h2>
                 
                 {/* 설명 텍스트 - 반응형 표시 */}
-                <div className="text-white/90 text-xs sm:text-sm md:text-base leading-tight md:leading-relaxed">
-                  {/* 모바일용 간단한 설명 */}
-                  <div className="md:hidden space-y-0.5">
-                    <p>랜덤 매칭으로</p>
+                <div className="text-[#312e81] font-bold drop-shadow-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 text-xs sm:text-sm md:text-base leading-tight md:leading-relaxed">
+                        {/* 모바일용 간단한 설명 */}
+                        <div className="md:hidden space-y-0.5">
+                          <p>랜덤 매칭으로</p>
                     <p>바로 게임 시작!</p>
                   </div>
                   
@@ -206,10 +206,10 @@ export function GameJoinScreen({ onBack, onMatchmaking }: GameJoinScreenProps) {
           }}
         >
           <motion.div
-            className="relative w-full 
-              h-[120px] sm:h-[140px] 
-              md:h-[400px] lg:h-[450px] xl:h-[500px]
-              bg-[rgba(94,255,100,0.53)] 
+            className="group relative w-full
+                      h-[120px] sm:h-[140px]
+                      md:h-[400px] lg:h-[450px] xl:h-[500px]
+                      bg-[rgba(94,255,100,0.53)] 
               rounded-[15px] sm:rounded-[20px] md:rounded-[25px] lg:rounded-[35px] xl:rounded-[45px] 
               border-3 sm:border-4 md:border-5 lg:border-6 xl:border-7 
               border-[#6dc4e8] overflow-hidden cursor-pointer shadow-xl md:shadow-2xl"
@@ -240,7 +240,7 @@ export function GameJoinScreen({ onBack, onMatchmaking }: GameJoinScreenProps) {
                 }}
               >
                 <motion.div
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-28 lg:h-28 xl:w-32 xl:h-32 bg-center bg-cover bg-no-repeat bg-gradient-to-br from-[#6dc4e8] to-[#5ab4d8] rounded-full flex items-center justify-center text-white text-2xl"
+                  className="flex items-center justify-center text-[4rem] sm:text-[5rem] md:text-[7rem] lg:text-[9rem] xl:text-[11rem] drop-shadow-xl"
                   // style={{ backgroundImage: `url('${imgFreeIconCustomization17998071}')` }} // 주석 처리
                   animate={{
                     rotate: [0, 360],
@@ -283,10 +283,10 @@ export function GameJoinScreen({ onBack, onMatchmaking }: GameJoinScreenProps) {
                 </motion.h2>
                 
                 {/* 설명 텍스트 - 반응형 표시 */}
-                <div className="text-white/90 text-xs sm:text-sm md:text-base leading-tight md:leading-relaxed">
-                  {/* 모바일용 간단한 설명 */}
-                  <div className="md:hidden space-y-0.5">
-                    <p>커스텀 방 생성</p>
+                <div className="text-[#064e3b] font-bold drop-shadow-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 text-xs sm:text-sm md:text-base leading-tight md:leading-relaxed">
+                        {/* 모바일용 간단한 설명 */}
+                        <div className="md:hidden space-y-0.5">
+                          <p>커스텀 방 생성</p>
                     <p>친구 초대하기</p>
                   </div>
                   
