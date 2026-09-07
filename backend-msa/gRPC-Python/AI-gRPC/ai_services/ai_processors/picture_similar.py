@@ -15,10 +15,10 @@ except Exception as e:
     logger.error(f"Failed to load CLIP model: {str(e)}")
     raise
 
-def check_picture_similarity(image_base64, target_picture):
+def check_picture_similarity(image_data, target_picture):
     try:
         # Base64 디코딩 및 이미지 로드
-        image_data = base64.b64decode(image_base64)
+        # image_data is already bytes
         image = Image.open(io.BytesIO(image_data)).convert("RGB")
 
         # 고정된 5개 텍스트

@@ -5,7 +5,7 @@ import warnings
 
 import picture_similar_pb2 as picture__similar__pb2
 
-GRPC_GENERATED_VERSION = '1.74.0'
+GRPC_GENERATED_VERSION = '1.83.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in picture_similar_pb2_grpc.py depends on'
+        + ' but the generated code in picture_similar_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class PictureSimilarServiceStub(object):
+class PictureSimilarServiceStub:
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -41,7 +41,7 @@ class PictureSimilarServiceStub(object):
                 _registered_method=True)
 
 
-class PictureSimilarServiceServicer(object):
+class PictureSimilarServiceServicer:
     """Missing associated documentation comment in .proto file."""
 
     def CheckSimilarity(self, request, context):
@@ -66,7 +66,7 @@ def add_PictureSimilarServiceServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class PictureSimilarService(object):
+class PictureSimilarService:
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod

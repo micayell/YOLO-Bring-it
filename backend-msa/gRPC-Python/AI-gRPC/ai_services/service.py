@@ -39,18 +39,17 @@ logger = logging.getLogger(__name__)
 
 class ObjectDetectServicer(ObjectDetectServiceServicer):
     def Detect(self, request, context):
-        logger.info(f"Received ObjectDetect request: user_id={request.user_id}, target_item={request.target_item}, image_base64_length={len(request.image_base64)}")
+        logger.info(f"Received ObjectDetect request: user_id={0}, target_item={request.target_item}, image_base64_length={len(request.image_data)}")
         try:
-            result = process_object_detection(request.image_base64, request.target_item)
+            result = process_object_detection(request.image_data, request.target_item)
             status = json.dumps({
-                "userId": request.user_id,
+                "userId": 0,
                 "result": result["result"],
                 "error": None
             }, ensure_ascii=False)
             logger.info(f"ObjectDetect response: {status}")
             return DetectResponse(
-                status=status,
-                user_id=request.user_id
+                status=status
             )
         except Exception as e:
             logger.error(f"ObjectDetect error: {str(e)}")
@@ -58,21 +57,20 @@ class ObjectDetectServicer(ObjectDetectServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             return DetectResponse(
                 status=json.dumps({
-                    "userId": request.user_id,
+                    "userId": 0,
                     "result": "FAIL",
                     "error": str(e)
-                }, ensure_ascii=False),
-                user_id=request.user_id
+                }, ensure_ascii=False)
             )
         
 class FaceAnalysisServicer(FaceAnalysisServiceServicer):
     def AnalyzeEmotion(self, request, context):
-        logger.info(f"Received FaceAnalysis request: user_id={request.user_id}, do_emotion={request.do_emotion}, image_base64_length={len(request.image_base64)}")
+        logger.info(f"Received FaceAnalysis request: user_id={0}, do_emotion={request.do_emotion}, image_base64_length={len(request.image_data)}")
         try:
-            result = analyze_face_emotion(request.image_base64, request.do_emotion)
+            result = analyze_face_emotion(request.image_data, request.do_emotion)
             if result.startswith("Error") or result == "Face not detected":
                 status = json.dumps({
-                    "userId": request.user_id,  # type → userId
+                    "userId": 0,  # type → userId
                     "result": "FAIL",
                     "top_emotions": [],
                     "error": result
@@ -80,15 +78,14 @@ class FaceAnalysisServicer(FaceAnalysisServiceServicer):
             else:
                 emotion, score = result.split(":") if ":" in result else ("unknown", "0.00%")
                 status = json.dumps({
-                    "userId": request.user_id,
+                    "userId": 0,
                     "result": "PASS",
                     "top_emotions": [f"{emotion}:{score}"],
                     "error": None
                 }, ensure_ascii=False)
             logger.info(f"FaceAnalysis response: {status}")
             return AnalyzeEmotionResponse(
-                status=status,
-                user_id=request.user_id
+                status=status
             )
         except Exception as e:
             logger.error(f"FaceAnalysis error: {str(e)}")
@@ -96,28 +93,26 @@ class FaceAnalysisServicer(FaceAnalysisServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             return AnalyzeEmotionResponse(
                 status=json.dumps({
-                    "userId": request.user_id,
+                    "userId": 0,
                     "result": "FAIL",
                     "error": str(e)
-                }, ensure_ascii=False),
-                user_id=request.user_id
+                }, ensure_ascii=False)
             )
 
 class PictureSimilarServicer(PictureSimilarServiceServicer):
     def CheckSimilarity(self, request, context):
-        logger.info(f"Received PictureSimilar request: user_id={request.user_id}, target_picture={request.target_picture}, image_base64_length={len(request.image_base64)}")
+        logger.info(f"Received PictureSimilar request: user_id={0}, target_picture={request.target_picture}, image_base64_length={len(request.image_data)}")
         try:
-            result = check_picture_similarity(request.image_base64, request.target_picture)
+            result = check_picture_similarity(request.image_data, request.target_picture)
             status = json.dumps({
-                "userId": request.user_id,
+                "userId": 0,
                 "result": "PASS" if result.get("is_similar", False) else "FAIL",
                 "similarity_percent": result.get("similarity_percent", "0.00%"),
                 "error": None
             }, ensure_ascii=False)
             logger.info(f"PictureSimilar response: {status}")
             return CheckSimilarityResponse(
-                status=status,
-                user_id=request.user_id
+                status=status
             )
         except Exception as e:
             logger.error(f"PictureSimilar error: {str(e)}", exc_info=True)
@@ -125,25 +120,24 @@ class PictureSimilarServicer(PictureSimilarServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             return CheckSimilarityResponse(
                 status=json.dumps({
-                    "userId": request.user_id,
+                    "userId": 0,
                     "result": "FAIL",
                     "similarity_percent": "0.00%",
                     "error": str(e)
-                }, ensure_ascii=False),
-                user_id=request.user_id
+                }, ensure_ascii=False)
             )
         
 class VoiceGradeServicer(VoiceGradeServiceServicer):
     def CheckSimilarity(self, request, context):
-        logger.info(f"Received VoiceGrade request: user_id={request.user_id}, language={request.language}, target_audio_length={len(request.target_audio_base64)}, user_audio_length={len(request.user_audio_base64)}")
+        logger.info(f"Received VoiceGrade request: user_id={0}, language={request.language}, target_audio_length={len(request.target_audio_data)}, user_audio_length={len(request.user_audio_data)}")
         try:
             result = check_voice_similarity(
-                request.target_audio_base64,
-                request.user_audio_base64,
+                request.target_audio_data,
+                request.user_audio_data,
                 request.language
             )
             status = json.dumps({
-                "userId": request.user_id,
+                "userId": 0,
                 "result": "PASS" if result.get("is_similar", False) else "FAIL",
                 "target_text": result.get("target_text", ""),
                 "user_text": result.get("user_text", ""),
@@ -154,8 +148,7 @@ class VoiceGradeServicer(VoiceGradeServiceServicer):
             }, ensure_ascii=False)
             logger.info(f"VoiceGrade response: {status}")
             return CheckSimilarityResponse(
-                status=status,
-                user_id=request.user_id
+                status=status
             )
         except Exception as e:
             logger.error(f"VoiceGrade error: {str(e)}", exc_info=True)
@@ -163,7 +156,7 @@ class VoiceGradeServicer(VoiceGradeServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             return CheckSimilarityResponse(
                 status=json.dumps({
-                    "userId": request.user_id,
+                    "userId": 0,
                     "result": "FAIL",
                     "target_text": "",
                     "user_text": "",
@@ -171,8 +164,7 @@ class VoiceGradeServicer(VoiceGradeServiceServicer):
                     "audio_score_percent": 0.0,
                     "overall_score_percent": 0.0,
                     "error": str(e)
-                }, ensure_ascii=False),
-                user_id=request.user_id
+                }, ensure_ascii=False)
             )
 
 

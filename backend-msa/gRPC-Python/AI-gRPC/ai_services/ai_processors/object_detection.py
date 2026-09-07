@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 model = YOLO("yolov8n.pt")  # 서버 시작 시 로드
 
-def process_object_detection(image_base64, target_item):
+def process_object_detection(image_data, target_item):
     try:
-        image_data = base64.b64decode(image_base64)
+        # image_data is already bytes
         image = Image.open(io.BytesIO(image_data)).convert("RGB")
         image_np = np.array(image)
 

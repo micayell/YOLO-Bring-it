@@ -5,10 +5,10 @@ from PIL import Image
 from deepface import DeepFace
 from rembg import remove
 
-def analyze_face_emotion(image_base64, do_emotion):
+def analyze_face_emotion(image_data, do_emotion):
     # Base64 디코딩 및 이미지 로드
     try:
-        image_data = base64.b64decode(image_base64)
+        # image_data is already bytes
         image = Image.open(io.BytesIO(image_data)).convert("RGB")
     except Exception as e:
         return f"Error decoding image: {str(e)}"

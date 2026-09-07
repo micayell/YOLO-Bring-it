@@ -18,11 +18,11 @@ except Exception as e:
     logger.error(f"Failed to load Whisper model: {str(e)}")
     raise
 
-def check_voice_similarity(target_audio_base64, user_audio_base64, language="ko-KR"):
+def check_voice_similarity(target_audio_data, user_audio_data, language="ko-KR"):
     try:
         # Base64 디코딩
-        target_audio_data = base64.b64decode(target_audio_base64)
-        user_audio_data = base64.b64decode(user_audio_base64)
+        # bytes
+        # bytes
 
         # 임시 파일 생성
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as target_temp, \
