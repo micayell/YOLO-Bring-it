@@ -5,6 +5,7 @@ import { VideoOff, MicOff, User } from 'lucide-react';
 // 가짜 참가자 데이터 타입
 interface MockParticipant {
   identity: string;
+  name?: string;
   isConnected: boolean;
   hasVideo: boolean;
   hasAudio: boolean;
@@ -35,10 +36,10 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({ participant, l
       publications.forEach(pub => {
         if (pub.track) {
           if (pub.kind === Track.Kind.Video) {
-            pub.track.attach(videoRef.current!);
+            pub.track.attach(videoRef.current!); setIsVideoMuted(false);
           }
           if (pub.kind === Track.Kind.Audio) {
-            pub.track.attach(audioRef.current!);
+            pub.track.attach(audioRef.current!); setIsAudioMuted(false);
           }
         }
       });
@@ -66,13 +67,13 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({ participant, l
 
     p.on(ParticipantEvent.TrackPublished, (pub) => {
       if (pub.track) {
-        if (pub.kind === Track.Kind.Video) pub.track.attach(videoRef.current!);
-        if (pub.kind === Track.Kind.Audio) pub.track.attach(audioRef.current!);
+        if (pub.kind === Track.Kind.Video) pub.track.attach(videoRef.current!); setIsVideoMuted(false);
+        if (pub.kind === Track.Kind.Audio) pub.track.attach(audioRef.current!); setIsAudioMuted(false);
       }
     });
     p.on(ParticipantEvent.TrackSubscribed, (track) => {
-        if (track.kind === Track.Kind.Video) track.attach(videoRef.current!);
-        if (track.kind === Track.Kind.Audio) track.attach(audioRef.current!);
+        if (track.kind === Track.Kind.Video) track.attach(videoRef.current!); setIsVideoMuted(false);
+        if (track.kind === Track.Kind.Audio) track.attach(audioRef.current!); setIsAudioMuted(false);
     });
     
     p.on(ParticipantEvent.TrackMuted, handleTrackMuted);
@@ -142,7 +143,7 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({ participant, l
         {/* 참가자 이름 */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
           <span className="text-white text-sm sm:text-base lg:text-lg font-medium">
-            {mockParticipant.identity}
+            {mockParticipant.name || mockParticipant.identity}
           </span>
         </div>
       </div>
@@ -178,7 +179,7 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({ participant, l
       {/* 참가자 이름 */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
         <span className="text-white text-sm sm:text-base lg:text-lg font-medium">
-          {realParticipant.identity}
+          {realParticipant.name || realParticipant.identity}
           {realParticipant.isLocal && ' (나)'}
         </span>
       </div>

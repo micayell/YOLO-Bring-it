@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Camera, Mic, Video, X } from "lucide-react";
+import { ParticipantTile } from "../../ParticipantTile";
 import { useIsPortrait } from "@/shared/ui/use-window-size";
 // 💥 useGameWebSocket import 제거
 import { judgeGame } from "@/domains/game/services/gameService";
@@ -12,6 +13,7 @@ interface DetectedObject {
 }
 
 interface BringItProps {
+  keywords?: Record<string, string>;
   targetObject?: string;
   timeLeft: number;
   videoRef?: React.RefObject<HTMLVideoElement>;
@@ -32,6 +34,7 @@ interface BringItProps {
 }
 
 export function BringIt({
+  keywords,
   targetObject = "핸드폰",
   timeLeft,
   videoRef,
@@ -57,6 +60,8 @@ export function BringIt({
   // 💥 웹소켓 연결 로직 제거
 
   // 제시어 오버레이 상태
+  const actualTargetKo = keywords?.ko || targetObject || "핸드폰";
+  const actualTargetEn = keywords?.en || actualTargetKo;
   const [showKeyword, setShowKeyword] = useState(false);
   const [keywordVisible, setKeywordVisible] = useState(false);
 
@@ -121,7 +126,7 @@ export function BringIt({
         gameCode: 1,
         userId: userData?.memberUid || 0,
         request: {
-          targetItem: targetObject,
+          targetItem: actualTargetEn,
           image: imageBlob
         }
       });
@@ -252,15 +257,15 @@ export function BringIt({
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">{participant.identity}</span>
+                  <div className="w-full h-full bg-slate-200 flex items-center justify-center">
+                    <ParticipantTile participant={participant} livekitParticipant={participant} />
                   </div>
                   
                   {/* 참가자 이름 오버레이 */}
                   <div className="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 right-1 sm:right-2">
                     <div className="bg-[#6dc4e8]/90 backdrop-blur-sm rounded px-1 sm:px-2 lg:px-3 py-0.5 sm:py-1">
                       <span className="text-white text-xs sm:text-sm lg:text-sm font-['BM_HANNA_TTF:Regular',_sans-serif] truncate block text-center">
-                        {participant.identity}
+                        {participant.name || participant.identity}
                       </span>
                     </div>
                   </div>
@@ -358,7 +363,7 @@ export function BringIt({
                   <div className="text-center text-white max-w-md">
                     <div className="text-6xl mb-4">🎉</div>
                     <h3 className="text-2xl mb-2">성공!</h3>
-                    <p className="text-lg mb-2">{targetObject}을 찾았습니다!</p>
+                    <p className="text-lg mb-2">{actualTargetKo}을 찾았습니다!</p>
                     <p className="text-sm mb-6 opacity-80">
                       AI가 정확히 인식했습니다!
                     </p>
@@ -376,7 +381,7 @@ export function BringIt({
                   <div className="text-center text-white max-w-md">
                     <div className="text-6xl mb-4">😅</div>
                     <h3 className="text-2xl mb-2">아쉬워요!</h3>
-                    <p className="text-lg mb-2">{targetObject}을 찾지 못했습니다.</p>
+                    <p className="text-lg mb-2">{actualTargetKo}을 찾지 못했습니다.</p>
                     <p className="text-sm mb-6 opacity-80">
                       다시 시도해보세요!
                     </p>
@@ -416,7 +421,7 @@ export function BringIt({
                      <div className="bg-white rounded-2xl px-8 py-6 shadow-2xl">
                        <p className="text-blue-600 text-base mb-2">제시어</p>
                        <h1 className="text-4xl text-blue-800">
-                         {targetObject}
+                         {actualTargetKo}
                        </h1>
                      </div>
                    </motion.div>
@@ -432,7 +437,7 @@ export function BringIt({
         <div className="p-4 flex flex-col items-center gap-4">
           <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 border-2 border-[#10b981]/30">
             <p className="text-sm text-gray-700 mb-1 text-center">
-              제시어: <span className="font-medium text-blue-600">{targetObject}</span>
+              제시어: <span className="font-medium text-blue-600">{actualTargetKo}</span>
             </p>
             <p className="text-xs text-gray-600 text-center">
               물건을 카메라에 보여주고 버튼을 클릭하세요!
@@ -463,7 +468,7 @@ export function BringIt({
         <div className="p-4 text-center">
           <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border-2 border-[#10b981]/30">
             <p className="text-sm text-gray-700 mb-1">
-              제시어: <span className="font-medium text-blue-600">{targetObject}</span>
+              제시어: <span className="font-medium text-blue-600">{actualTargetKo}</span>
             </p>
             <p className="text-sm text-gray-600">
               물건을 카메라에 보여주고 스페이스바를 눌러 사진을 찍고 AI 분석을 시작하세요!

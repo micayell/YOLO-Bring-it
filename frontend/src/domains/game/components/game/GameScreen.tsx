@@ -1,3 +1,4 @@
+import { RoundResultScreen } from "@/domains/game/components/result/RoundResultScreen";
 import { useState, useEffect, useRef } from "react";
 
 import type { GameData, RoundResult } from "@/shared/types/game";
@@ -12,25 +13,31 @@ import { toast } from "sonner";
 import { GameCountdownScreen } from "@/domains/game/components/game";
 import { FaceIt } from "@/domains/game/components/game/games/FaceIt";
 import { BringIt } from "@/domains/game/components/game/games/BringIt";
-import { ColorKiller } from "@/domains/game/components/game/games/ColorKiller";
-import { ShowMeTheArt } from "@/domains/game/components/game/games/ShowMeTheArt";
+import { ColorIt } from "@/domains/game/components/game/games/ColorIt";
+import { DrawIt } from "@/domains/game/components/game/games/DrawIt";
 // import { VoiceCrack } from "@/domains/game/components/game/games/VoiceCrack";
-import { TimeSniper } from "@/domains/game/components/game/games/TimeSniper";
-import { TheFastestFinger } from "@/domains/game/components/game/games/TheFastestFinger";
+import { TimeIt } from "@/domains/game/components/game/games/TimeIt";
+import { FingerIt } from "@/domains/game/components/game/games/FingerIt";
 
 interface GameScreenProps {
   gameData: GameData;
   roomId: number;
   onRoundComplete: (result: RoundResult) => void;
   onGameEnd: () => void;
+  onNextRound: () => void;
 }
 
 export function GameScreen({
   gameData,
   roomId,
   onRoundComplete,
+  onNextRound,
+  onGameEnd,
 }: GameScreenProps) {
-  const [gamePhase, setGamePhase] = useState<"loading" | "countdown" | "playing" | "complete">("loading");
+  const [gamePhase, setGamePhase] = useState<"loading" | "countdown" | "playing" | "complete" | "round-result">("loading");
+  const [roundResultState, setRoundResultState] = useState<RoundResult | null>(null);
+  const [roundDetailedScores, setRoundDetailedScores] = useState<any[]>([]);
+  const [currentKeywords, setCurrentKeywords] = useState<Record<string, string>>({});
   const [countdown, setCountdown] = useState<number>(3);
   const [gameTime, setGameTime] = useState<number>(0); // 게임 진행 시간
   const [isGameTimerRunning, setIsGameTimerRunning] = useState<boolean>(false);
@@ -62,35 +69,59 @@ export function GameScreen({
 
   // 인게임 웹소켓 연결
   const {
-    isConnected: isWebSocketConnected,
-    sendGameScore,
+    // @ts-ignore
+  isConnected: isWebSocketConnected,
+    // @ts-ignore
+  sendGameScore,
   } = useGameWebSocket({
     roomId: roomId,
     onRoundIntro: (data) => {
       console.log('🎮 ROUND_INTRO 수신:', data);
       setGamePhase("loading"); // 라운드 정보 로딩 시작
       setCurrentRoundIdx(data.roundIdx);
+        if (data.keywords) {
+          setCurrentKeywords(data.keywords);
+        }
     },
     onRoundEnd: (data) => {
       console.log('🏁 ROUND_ENDED 수신:', data);
-      setGamePhase("complete");
+      // setGamePhase("complete");
       // 서버에서 받은 순위 정보로 결과 생성
       if (data.leaderboard) {
+        const sortedDetails = [...roundDetailedScores].sort((a,b) => (b.score || 0) - (a.score || 0));
+        
         const result: RoundResult = {
           round: data.roundIdx,
-          gameType: gameData.gameType, // 현재 게임 데이터에서 가져옴
-          rankings: data.leaderboard.map((r: any) => ({
-            playerId: r.memberId.toString(),
-            rank: r.rank,
-            score: r.totalScore,
-            performance: "" // 필요 시 추가 정보
-          }))
+          gameType: gameData.gameType,
+          rankings: data.leaderboard.map((r: any) => {
+             const detail = roundDetailedScores.find((d: any) => String(d.memberId) === String(r.memberId));
+             
+             let perf = "";
+             if (detail) {
+                if (detail.colorScore) perf = detail.colorScore + " 일치";
+                else if (detail.similarityPercent) perf = detail.similarityPercent + "% 일치";
+                else if (detail.topEmotions) perf = detail.topEmotions.split(',')[0].replace(':', ' ');
+             }
+             
+             const roundRank = detail ? sortedDetails.findIndex((d: any) => d.memberId === detail.memberId) + 1 : r.rank;
+
+             return {
+               playerId: r.memberId.toString(),
+               rank: roundRank, 
+               score: detail ? detail.score : 0,
+               performance: perf,
+               globalScore: r.totalScore
+             };
+          })
         };
         onRoundComplete(result);
+        setRoundResultState(result);
+        setGamePhase("round-result");
       }
     },
     onGameScore: (data) => {
-      console.log('📊 점수 업데이트 수신:', data);
+      console.log('점수 업데이트 수신:', data);
+      setRoundDetailedScores(data);
     },
     onError: (error) => {
       console.error('❌ 웹소켓 에러:', error);
@@ -162,6 +193,7 @@ export function GameScreen({
       await livekitRoom.connect(livekitUrl, token);
       console.log('✅ LiveKit 인증 성공, 미디어 엔진 연결 대기 중...');
       
+      livekitRoom.remoteParticipants.forEach((p: any) => addParticipant(p));
       setRoom(livekitRoom);
       setConnected(true);
       setConnecting(false);
@@ -267,7 +299,7 @@ export function GameScreen({
         const newTime = prev - 1;
         if (newTime <= 0) {
           setIsGameTimerRunning(false);
-          setGamePhase("complete");
+          // setGamePhase("complete");
           return 0;
         }
         return newTime;
@@ -285,33 +317,33 @@ export function GameScreen({
         console.log(`🚀 점수 전송: ${score}점`);
         sendGameScore(currentGameInfo.gameCode, score);
       }
-      setGamePhase("complete");
+      // setGamePhase("complete");
     };
 
     switch (gameData.gameType) {
       case 'bring_object':
-        return <BringIt videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} />;
+        return <BringIt keywords={currentKeywords} videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} participants={Array.from(livekitParticipants.values())} />;
       case 'expression':
-        return <FaceIt videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} />;
+        return <FaceIt keywords={currentKeywords} videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} participants={Array.from(livekitParticipants.values())} />;
       case 'color_similar':
-        return <ColorKiller videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} />;
+        return <ColorIt keywords={currentKeywords} videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} participants={Array.from(livekitParticipants.values())} />;
       case 'drawing':
-        return <ShowMeTheArt videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} />;
+        return <DrawIt keywords={currentKeywords} videoRef={videoRef} timeLeft={gameTime} roomId={roomId} roundIdx={currentRoundIdx || 1} onGameComplete={handleGameComplete} participants={Array.from(livekitParticipants.values())} />;
       case 'timing_click':
         return (
-          <TimeSniper
+          <TimeIt
             targetTime={5}
             currentTime={gameTime}
             timeLeft={gameTime}
             onTimeClick={() => {
-              console.log("TimeSniper clicked!");
+              console.log("TimeIt clicked!");
               handleGameComplete(true, [], 100);
             }}
           />
         );
       case 'quick_press':
         return (
-          <TheFastestFinger
+          <FingerIt
             localParticipant={room?.localParticipant}
             remoteParticipants={Array.from(livekitParticipants.values())}
             onRoundComplete={(data) => {
@@ -336,6 +368,33 @@ export function GameScreen({
 
   if (gamePhase === "loading") {
     return <div>라운드 정보를 불러오는 중...</div>;
+  }
+
+
+  if (gamePhase === "round-result") {
+    // For FingerIt, we pass playerResults, for others we don't
+    const isFastest = roundResultState?.gameType === 'quick_press';
+    const mappedFastest = isFastest ? roundResultState?.rankings.map(r => ({
+      id: parseInt(r.playerId),
+      name: gameData.players.find(p => String(p.id) === String(r.playerId))?.name || gameData.players.find(p => String(p.id) === String(r.playerId))?.name || '',
+      reactionTime: r.score > 0 ? 10000 - r.score : null,
+      status: 'completed' as const
+    })) : undefined;
+
+    return (
+      <div className="absolute inset-0 z-50 bg-background">
+        <RoundResultScreen 
+          gameData={gameData}
+          playerResults={mappedFastest}
+          onGameEnd={onGameEnd}
+          onNextRound={() => {
+            onNextRound();
+            setGamePhase("loading");
+            setRoundResultState(null);
+          }}
+        />
+      </div>
+    );
   }
 
   if (gamePhase === "countdown") {

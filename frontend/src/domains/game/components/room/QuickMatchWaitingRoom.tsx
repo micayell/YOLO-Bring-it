@@ -23,9 +23,10 @@ import { useRef, useEffect } from "react";
 interface QuickMatchWaitingRoomProps {
   onStartGame: (players: Player[], roomUid: number) => void;
   onBack: () => void;
+  existingRoomId?: number;
 }
 
-export function QuickMatchWaitingRoom({ onStartGame, onBack }: QuickMatchWaitingRoomProps) {
+export function QuickMatchWaitingRoom({ onStartGame, onBack, existingRoomId }: QuickMatchWaitingRoomProps) {
   const {
     players,
     roomId,
@@ -43,7 +44,7 @@ export function QuickMatchWaitingRoom({ onStartGame, onBack }: QuickMatchWaiting
     handleToggleReady,
     currentUser,
     handleLeaveRoom,
-  } = useGameWaitingRoomLogic({ gameMode: "quick", onStartGame, onBack });
+  } = useGameWaitingRoomLogic({ gameMode: "quick", onStartGame, onBack, existingRoomId });
 
   useEffect(() => {
     if (roomId) {

@@ -249,6 +249,7 @@ export interface PlayerRanking {
   rank: number;
   score: number;
   performance?: string;
+  globalScore?: number;
 }
 
 export interface ChatMessage {

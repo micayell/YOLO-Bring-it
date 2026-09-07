@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Crown, Trophy, Medal, Award, Clock, Target } from "lucide-react";
 import { GameData, Player } from "@/shared/types/game";
@@ -22,7 +23,25 @@ export function RoundResultScreen({
   onNextRound,
   onGameEnd,
 }: RoundResultScreenProps) {
-  // PlayerResult[] 형식인 경우 처리 (TheFastestFinger에서 전달)
+  const [timeLeft, setTimeLeft] = useState(5);
+  const isLastRoundGlobal = gameData ? gameData.currentRound >= gameData.totalRounds : false;
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      if (isLastRoundGlobal) {
+        onGameEnd();
+      } else {
+        onNextRound();
+      }
+      return;
+    }
+    const timer = setTimeout(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft, isLastRoundGlobal, onGameEnd, onNextRound]);
+
+  // PlayerResult[] 형식인 경우 처리 (FingerIt에서 전달)
   if (playerResults && Array.isArray(playerResults)) {
     console.log('📊 RoundResultScreen - playerResults 받음:', playerResults);
     const sortedResults = playerResults
@@ -47,7 +66,7 @@ export function RoundResultScreen({
               </h1>
             </div>
             <p className="font-['BM_HANNA_TTF:Regular',_sans-serif] text-base lg:text-lg text-muted-foreground tracking-wider">
-              TheFastestFinger
+              FingerIt
             </p>
           </div>
         </div>
@@ -160,19 +179,19 @@ export function RoundResultScreen({
           description: "완료 시간",
         };
 
-      // ShowMeTheArt 게임
+      // DrawIt 게임
       case "drawing":
         return {
-          name: "ShowMeTheArt",
+          name: "DrawIt",
           icon: "🧠",
           unit: "점",
           description: "유사도 분석",
         };
 
-      // TheFastestFinger 게임
+      // FingerIt 게임
       case "reaction_time":
         return {
-          name: "TheFastestFinger",
+          name: "FingerIt",
           icon: "⚡",
           unit: "ms",
           description: "반응 속도",
@@ -189,7 +208,7 @@ export function RoundResultScreen({
   };
 
   const gameInfo = getGameTypeInfo(currentResult.gameType);
-  const isLastRound = gameData.currentRound >= gameData.totalRounds;
+  const isLastRound = isLastRoundGlobal;
 
   // 순위별 색상과 아이콘
   const getRankStyle = (rank: number) => {
@@ -374,6 +393,19 @@ export function RoundResultScreen({
                            라운드 점수
                          </div>
                        </motion.div>
+                       
+                       {ranking.performance && (
+                         <motion.div
+                           className={`bg-white/20 backdrop-blur-sm rounded-[20px] px-6 py-3 inline-block ml-4 mb-4`}
+                           initial={{ scale: 0 }}
+                           animate={{ scale: 1 }}
+                           transition={{ delay: 1.4, duration: 0.6, type: "spring" }}
+                         >
+                           <div className={`font-['BM_HANNA_TTF:Regular',_sans-serif] text-xl lg:text-2xl ${style.textColor} tracking-wider`}>
+                             {ranking.performance}
+                           </div>
+                         </motion.div>
+                       )}
 
                        
                     </div>
@@ -475,6 +507,14 @@ export function RoundResultScreen({
                        라운드 점수
                      </div>
                    </div>
+                   
+                   {ranking.performance && (
+                     <div className="text-center mb-4">
+                       <div className={`bg-white/10 rounded-full px-3 py-1 inline-block font-['BM_HANNA_TTF:Regular',_sans-serif] text-sm lg:text-base ${style.textColor}`}>
+                         {ranking.performance}
+                       </div>
+                     </div>
+                   )}
 
                    
 
@@ -556,7 +596,7 @@ export function RoundResultScreen({
             boxShadow: "0 0 30px rgba(109,196,232,0.5)",
           }}
           whileTap={{ scale: 0.95 }}
-          onClick={isLastRound ? onGameEnd : onNextRound}
+          onClick={isLastRoundGlobal ? onGameEnd : onNextRound}
         >
           <span className="font-['BM_HANNA_TTF:Regular',_sans-serif] text-xl tracking-wider relative z-10">
             {isLastRound ? "🏆 최종 결과 보기" : "➡️ 다음 라운드"}

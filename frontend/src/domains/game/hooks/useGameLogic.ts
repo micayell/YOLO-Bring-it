@@ -2,20 +2,20 @@ import { useState, useEffect } from "react";
 import type { Screen, GameData, Player, RoundResult, GameType } from "@/shared/types/game";
 import { useUserLoginStore } from "@/domains/user/stores/userStore";
 import apiClient from "@/shared/services/api";
-import { PERFORMANCE_CONFIGS, GAME_CONFIG, GAME_DETAILED_CONFIG } from "@/shared/types/game";
+import { GAME_DETAILED_CONFIG } from "@/shared/types/game";
 
 // 백엔드 게임 코드를 프론트엔드 GameType으로 변환
 const gameCodeToType = (gameCode: number): GameType => {
   const mapping: Record<number, GameType> = {
     1: "bring_object",      // 물건 가져오기 → BringIt.tsx
     2: "expression",        // 감정 표현하기 → FaceIt.tsx
-    3: "color_similar",     // 비슷한 색 가져오기 → ColorKiller.tsx
-    4: "drawing",           // 그림 그리기 → ShowMeTheArt.tsx
+    3: "color_similar",     // 비슷한 색 가져오기 → ColorIt.tsx
+    4: "drawing",           // 그림 그리기 → DrawIt.tsx
     5: "blink",             // 눈싸움 → BlinkBattle.tsx
     6: "famous_line",       // 명대사 따라하기 → VoiceCrack.tsx
     7: "forbidden_word",    // 금지 단어 게임 → TrapWord.tsx
-    8: "timing_click",      // 타이밍 게임 → TimeSniper.tsx (정확한 시간에 버튼 클릭)
-    9: "quick_press",       // 반응속도 게임 → TheFastestFinger.tsx
+    8: "timing_click",      // 타이밍 게임 → TimeIt.tsx (정확한 시간에 버튼 클릭)
+    9: "quick_press",       // 반응속도 게임 → FingerIt.tsx
     10: "headbanging"       // 플래피버드 → HeadBanging.tsx
   };
   
@@ -198,25 +198,8 @@ export function useGameLogic() {
       return;
     }
 
-    // 점수 계산 및 게임 데이터 업데이트 로직은 그대로 유지
+    // 점수 계산 및 게임 데이터 업데이트
     const enhancedRankings = result.rankings.map(ranking => {
-      // BringIt 게임이 아닌 경우에만 PERFORMANCE_CONFIGS 사용
-      if (result.gameType !== 'bring_object') {
-        try {
-          const config = PERFORMANCE_CONFIGS[result.gameType as keyof typeof PERFORMANCE_CONFIGS] as any;
-          if (config && typeof config === 'object') {
-            if ('decrement' in config && 'base' in config) {
-              return { ...ranking, performance: `${config.base - (ranking.rank - 1) * config.decrement}` };
-            } else if ('increment' in config && 'base' in config) {
-              return { ...ranking, performance: `${config.base + (ranking.rank - 1) * config.increment}` };
-            }
-          }
-        } catch (error) {
-          console.warn('PERFORMANCE_CONFIGS에서 설정을 찾을 수 없습니다:', result.gameType);
-        }
-      }
-      
-      // 기본값 또는 이미 설정된 performance 사용
       return { ...ranking, performance: ranking.performance || "완료" };
     });
 
@@ -227,10 +210,10 @@ export function useGameLogic() {
       roundResults: [...gameData.roundResults, updatedResult],
       players: gameData.players.map(player => {
         const playerResult = enhancedRankings.find(r => r.playerId === player.id);
-        const roundScore = playerResult ? (8 - playerResult.rank) * GAME_CONFIG.ROUND_SCORE_MULTIPLIER : 0;
+        const roundScore = playerResult ? playerResult.score : 0;
         return {
           ...player,
-          totalScore: player.totalScore + roundScore,
+          totalScore: playerResult?.globalScore !== undefined ? playerResult.globalScore : (player.totalScore + roundScore),
           roundScores: [...player.roundScores, roundScore]
         };
       })
@@ -242,7 +225,7 @@ export function useGameLogic() {
       console.log("🏁 게임 종료 - 최종 결과로 이동");
       setCurrentScreen("final-result");
     } else {
-      setCurrentScreen("round-result");
+      // setCurrentScreen("round-result"); // Handled inside GameScreen to keep WebRTC alive
     }
   };
 

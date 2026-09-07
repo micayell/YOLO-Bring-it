@@ -5,7 +5,7 @@ import type { GameData, GameType } from "@/shared/types/game";
 import { GAME_DETAILED_CONFIG } from "@/shared/types/game";
 import {
   BringIt,
-  ShowMeTheArt,
+  DrawIt,
 } from "./games";
 
 interface GameHeaderProps {
@@ -41,16 +41,16 @@ export function GameHeader({
           timeLeft={remainingTime}
           videoRef={undefined}
           isGameActive={gamePhase === 'playing'}
-          onGameComplete={(success) => {
+          onGameComplete={(success: boolean) => {
             if (success) onGameEnd();
           }}
         />
       ),
       'drawing': (
-        <ShowMeTheArt 
+        <DrawIt timeLeft={remainingTime} 
           videoRef={useRef<HTMLVideoElement>(null)}
           isGameActive={gamePhase === 'playing'}
-          onGameComplete={(success) => {
+          onGameComplete={(success: boolean) => {
             if (success) onGameEnd();
           }}
         />

@@ -23,10 +23,11 @@ import { useRef, useEffect } from "react";
 interface CustomGameWaitingRoomProps {
   onStartGame: (players: Player[], roomUid: number) => void;
   onBack: () => void;
-  invitedRoomId?: number; // prop 정의 추가
+  existingRoomId?: number; // prop 정의 추가
+  rounds?: number;
 }
 
-export function CustomGameWaitingRoom({ onStartGame, onBack, invitedRoomId }: CustomGameWaitingRoomProps) {
+export function CustomGameWaitingRoom({ onStartGame, onBack, existingRoomId, rounds }: CustomGameWaitingRoomProps) {
   const {
     players,
     roomId,
@@ -47,7 +48,7 @@ export function CustomGameWaitingRoom({ onStartGame, onBack, invitedRoomId }: Cu
     handleInviteFriend,
     currentUser,
     handleLeaveRoom,
-  } = useGameWaitingRoomLogic({ gameMode: "custom", onStartGame, onBack, invitedRoomId }); // 훅에 prop 전달
+  } = useGameWaitingRoomLogic({ gameMode: "custom", onStartGame, onBack, existingRoomId, rounds }); // 훅에 prop 전달
 
   return (
     <div className="h-screen w-full text-slate-800 relative overflow-hidden flex flex-col bg-[#F0F8FF] font-sans">
