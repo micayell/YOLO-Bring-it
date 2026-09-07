@@ -7,12 +7,10 @@ service FaceAnalysisService {
 }
 
 message AnalyzeEmotionRequest {
-  string image_base64 = 1;
-  int32 user_id = 2;
-  string do_emotion = 3;
+  bytes image_data = 1;
+  string do_emotion = 2;
 }
 
 message AnalyzeEmotionResponse {
   string status = 1;
-  int32 user_id = 2;
 }
