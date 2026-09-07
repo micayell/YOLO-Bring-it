@@ -9,6 +9,7 @@ import { saveFinalScore, saveYoloUp, saveYoloDown } from "@/domains/game/service
 interface FinalResultScreenProps {
   gameData: GameData;
   onGameEnd: () => void;
+  onRestartGame?: () => void;
   roomId?: string;
 }
 
@@ -24,15 +25,20 @@ const rankIcons = {
   3: Medal,
 };
 
-const gameTypeNames = {
-  expression: "표정 짓기",
-  blink: "깜빡임 대결",
-  color: "색깔 찾기",
-  speed: "스피드 수집",
-  mimicry: "음성 모사"
+const gameTypeNames: Record<string, string> = {
+  bring_object: "Bring It",
+  expression: "Face It",
+  color_similar: "Color It",
+  drawing: "Draw It",
+  quick_press: "Finger It",
+  timing_click: "Time It",
+  blink: "Blink Battle",
+  forbidden_word: "Trap Word",
+  famous_line: "음성 모사",
+  headbanging: "헤드뱅잉"
 };
 
-export function FinalResultScreen({ gameData, onGameEnd, roomId }: FinalResultScreenProps) {
+export function FinalResultScreen({ gameData, onGameEnd, onRestartGame, roomId }: FinalResultScreenProps) {
   const [showResults, setShowResults] = useState(false);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [showStats, setShowStats] = useState(false);
@@ -54,8 +60,13 @@ export function FinalResultScreen({ gameData, onGameEnd, roomId }: FinalResultSc
           const response = await saveFinalScore(parseInt(roomId as string), userData?.memberUid as number);
           console.log("🏆 최종 점수 데이터 수신:", response.data);
 
-          // API 응답 데이터로 순위 상태 설정
-          setFinalRankings(response.data || []);
+          // API 응답 데이터가 비어있으면 catch 블록으로 넘어가 로컬 폴백 수행
+          if (response.data && response.data.length > 0) {
+            setFinalRankings(response.data);
+          } else {
+            console.warn("Backend returned empty final scores. Falling back to local gameData.");
+            throw new Error("Empty final scores");
+          }
 
         } catch (error) {
           console.error("🔴 최종 점수 정보를 가져오는데 실패했습니다. 로컬 데이터로 대체합니다.", error);
@@ -145,8 +156,11 @@ export function FinalResultScreen({ gameData, onGameEnd, roomId }: FinalResultSc
   };
 
   const handleRestartGame = () => {
-    // 새 게임 시작 로직 (현재는 로비로)
-    onGameEnd();
+    if (onRestartGame) {
+      onRestartGame();
+    } else {
+      onGameEnd();
+    }
   };
 
   // 칭찬 점수 (좋아요) 핸들러
@@ -661,7 +675,7 @@ export function FinalResultScreen({ gameData, onGameEnd, roomId }: FinalResultSc
 
                       <div className="space-y-2">
                         {round.rankings.slice(0, 3).map((ranking, rankIndex) => {
-                          const player = finalRankings.find(p => p.id === ranking.playerId);
+                          const player = finalRankings.find(p => String(p.id) === String(ranking.playerId)) || gameData.players.find(p => String(p.id) === String(ranking.playerId));
                           return (
                             <div 
                               key={ranking.playerId}
