@@ -36,7 +36,9 @@ public class GameJudgeController {
                                        @RequestParam(required = false) String language,
                                        @RequestPart(required = false) MultipartFile image,           // 이미지 파일
                                        @RequestPart(required = false) MultipartFile targetAudioPath, // 타겟 오디오 파일
-                                       @RequestPart(required = false) MultipartFile userAudioPath    // 사용자 오디오 파일
+                                       @RequestPart(required = false) MultipartFile userAudioPath,
+                                       @RequestParam(required = false) Long reactionTime,
+                                       @RequestParam(required = false) Double diffSeconds    // 사용자 오디오 파일
     ) {
         try {
             switch (gameCode.toString()) {
@@ -74,6 +76,14 @@ public class GameJudgeController {
 //                    // The Fastest Finger
 //                case "10":
 //                    // Head Banging
+                                case "8": // TimeIt
+                    return responseHandler.success(
+                            nonAiService.calculateTimeScore(roomId, roundIdx, userId, diffSeconds)
+                    );
+                case "9": // FingerIt
+                    return responseHandler.success(
+                            nonAiService.calculateFingerScore(roomId, roundIdx, userId, reactionTime)
+                    );
                 default:
                     return responseHandler.fail("해당하는 게임이 없습니다.", HttpStatus.BAD_REQUEST);
             }
