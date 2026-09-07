@@ -11,10 +11,11 @@ interface UseGameWaitingRoomLogicProps {
   gameMode: "quick" | "custom";
   onStartGame: (players: Player[], roomUid: number) => void;
   onBack: () => void;
-  invitedRoomId?: number;
+  existingRoomId?: number;
+  rounds?: number;
 }
 
-export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invitedRoomId }: UseGameWaitingRoomLogicProps) {
+export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, existingRoomId, rounds }: UseGameWaitingRoomLogicProps) {
   const { userData } = useUserLoginStore();
   const { friends, setFriends } = useFriendStore();
   const [players, setPlayers] = useState<Player[]>([]);
@@ -148,7 +149,7 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
       const roomTypeValue = gameMode === 'quick' ? 'random' : 'custom';
       const response = await apiClient.post(`/games/rooms`, {
         roomType: roomTypeValue,
-        roundNum: 5
+        roundNum: rounds || 5
       }, {
         headers: {
           Authorization: `Bearer ${userData.accessToken}`,
@@ -162,6 +163,12 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
       const result = response.data;
       if (result.data && result.data.roomUid) {
         setRoomId(result.data.roomUid);
+        
+        // 새로고침 시 방이 무한 생성되는 것을 막기 위해 현재 URL에 roomId를 반영
+        const url = new URL(window.location.href);
+        url.searchParams.set('roomId', result.data.roomUid.toString());
+        window.history.replaceState({}, '', url.toString());
+
         setMessages([{
           id: Date.now(),
           user: "System",
@@ -252,10 +259,10 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
     }
   }, [roomId, canStartGame, userData, onStartGame, players]);
 
-  const handleLeaveRoom = useCallback(async () => {
+  const handleLeaveRoom = useCallback(async (skipNavigate = false) => {
     if (!roomId) {
       toast.error("현재 방 정보가 없어 나갈 수 없습니다.");
-      onBack();
+      if (typeof skipNavigate !== 'boolean' || !skipNavigate) onBack();
       return;
     }
     try {
@@ -266,22 +273,37 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
         },
       });
       toast.success("방에서 나왔습니다.");
-      onBack();
+      if (typeof skipNavigate !== 'boolean' || !skipNavigate) onBack();
     } catch (error) {
       console.error("방 나가기 처리 중 오류 발생:", error);
       toast.error("방을 나가는 중 오류가 발생했습니다.");
-      onBack();
+      if (typeof skipNavigate !== 'boolean' || !skipNavigate) onBack();
     }
   }, [roomId, onBack, userData?.accessToken]);
 
+  // 브라우저 뒤로가기 방어 및 방 나가기 호출
   useEffect(() => {
-    if (invitedRoomId && !roomId) {
-      console.log(`✉️ 초대를 통해 방 ${invitedRoomId}에 입장합니다.`);
-      setRoomId(invitedRoomId);
+    const handlePopState = () => {
+      // popstate 이벤트 발생 시 (뒤로가기) 라우터는 이미 주소를 변경한 상태임
+      // onBack() 호출은 스킵하고 백엔드에 나가기 요청만 전달
+      if (roomId) {
+        handleLeaveRoom(true).catch(e => console.error(e));
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [handleLeaveRoom, roomId]);
+
+  useEffect(() => {
+    if (existingRoomId && !roomId) {
+      console.log(`✉️ 초대를 통해 방 ${existingRoomId}에 입장합니다.`);
+      setRoomId(existingRoomId);
       setMessages([{
         id: Date.now(),
         user: "System",
-        message: `초대를 통해 방에 참여했습니다! (ID: ${invitedRoomId})`,
+        message: `초대를 통해 방에 참여했습니다! (ID: ${existingRoomId})`,
         timestamp: new Date().toLocaleTimeString(),
         type: "system",
       }]);
@@ -289,7 +311,7 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
       isRoomCreating.current = true;
       createRoom();
     }
-  }, [createRoom, userData?.accessToken, invitedRoomId, roomId]);
+  }, [createRoom, userData?.accessToken, existingRoomId, roomId]);
 
   useEffect(() => {
     if (roomId) {
@@ -371,13 +393,13 @@ export function useGameWaitingRoomLogic({ gameMode, onStartGame, onBack, invited
 
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser?.id) {
       startVideo();
     }
     return () => {
       stopVideo();
     };
-  }, [currentUser, startVideo, stopVideo]);
+  }, [currentUser?.id, startVideo, stopVideo]);
 
   return {
     players,
