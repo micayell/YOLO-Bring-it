@@ -3,6 +3,10 @@ package com.yolo.bringit.gameservice.service.game;
 import com.yolo.bringit.gameservice.client.UserServiceClient;
 import com.yolo.bringit.gameservice.domain.game.BringIt;
 import com.yolo.bringit.gameservice.domain.game.ColorIt;
+import com.yolo.bringit.gameservice.domain.game.FingerIt;
+import com.yolo.bringit.gameservice.domain.game.TimeIt;
+import com.yolo.bringit.gameservice.repository.game.FingerItRepository;
+import com.yolo.bringit.gameservice.repository.game.TimeItRepository;
 import com.yolo.bringit.gameservice.domain.game.DrawIt;
 import com.yolo.bringit.gameservice.domain.game.FaceIt;
 import com.yolo.bringit.gameservice.domain.game.InGameScore;
@@ -46,6 +50,8 @@ public class InGameScoreServiceImpl implements InGameScoreService {
     private final FaceItRepository faceItRepository;
     private final ColorItRepository colorItRepository;
     private final DrawItRepository drawItRepository;
+    private final FingerItRepository fingerItRepository;
+    private final TimeItRepository timeItRepository;
 
     @Override
     public void saveScore(Long gameCode, Long roomId, Long memberId, int score) {
@@ -105,8 +111,8 @@ public class InGameScoreServiceImpl implements InGameScoreService {
 
             // 결과 리스트에 추가
             result.add(InGameScoreResponseDto.FinalResult.builder()
-                    .memberId(info.getMemberUid())
-                    .nickname(info.getNickname())
+                    .memberId(livescore.getMemberId())
+                    .nickname(info != null && info.getNickname() != null ? info.getNickname() : "Unknown_Player")
                     .rank(currentRank)
                     .totalScore(totalScore)
                     .build());
@@ -567,6 +573,63 @@ public class InGameScoreServiceImpl implements InGameScoreService {
         }
     }
 
+    
+    @Override
+    public void FingeritprocessScoring(Long roomId) {
+        List<FingerIt> results = fingerItRepository.findByRoomId(roomId);
+        if(!results.isEmpty()) {
+            // 오름차순 (짧은 시간 우선)
+            results.sort(Comparator.comparing(FingerIt::getReactionTime));
+            
+            List<InGameScoreResponseDto.FingerItScoreResult> scoreResults = new ArrayList<>();
+            for (int i = 0; i < results.size(); i++) {
+                int score = switch (i) {
+                    case 0 -> 15;
+                    case 1 -> 10;
+                    case 2 -> 5;
+                    default -> 0;
+                };
+                saveScore(9L, roomId, results.get(i).getMemberId(), score);
+                scoreResults.add(InGameScoreResponseDto.FingerItScoreResult.builder()
+                        .memberId(results.get(i).getMemberId())
+                        .reactionTime(results.get(i).getReactionTime())
+                        .score(score)
+                        .build());
+            }
+            sortScore(9L, roomId);
+            simpMessagingTemplate.convertAndSend("/topic/room/" + roomId + "/score", scoreResults);
+            results.forEach(r -> fingerItRepository.deleteById(r.getKey()));
+        }
+    }
+
+    @Override
+    public void TimeitprocessScoring(Long roomId) {
+        List<TimeIt> results = timeItRepository.findByRoomId(roomId);
+        if(!results.isEmpty()) {
+            // 오름차순 (차이가 적은 것 우선)
+            results.sort(Comparator.comparing(TimeIt::getDiffSeconds));
+            
+            List<InGameScoreResponseDto.TimeItScoreResult> scoreResults = new ArrayList<>();
+            for (int i = 0; i < results.size(); i++) {
+                int score = switch (i) {
+                    case 0 -> 15;
+                    case 1 -> 10;
+                    case 2 -> 5;
+                    default -> 0;
+                };
+                saveScore(8L, roomId, results.get(i).getMemberId(), score);
+                scoreResults.add(InGameScoreResponseDto.TimeItScoreResult.builder()
+                        .memberId(results.get(i).getMemberId())
+                        .diffSeconds(results.get(i).getDiffSeconds())
+                        .score(score)
+                        .build());
+            }
+            sortScore(8L, roomId);
+            simpMessagingTemplate.convertAndSend("/topic/room/" + roomId + "/score", scoreResults);
+            results.forEach(r -> timeItRepository.deleteById(r.getKey()));
+        }
+    }
+    
     /* --- 계산 메서드 --- */
     private static double extractPercent(String topEmotions) {
         if (topEmotions == null || topEmotions.isBlank()) return 0.0;

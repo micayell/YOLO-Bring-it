@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -32,10 +34,12 @@ public class GameServiceImpl implements GameService {
         int durationMs;
 
         switch (gameCode.intValue()) {
-            case 1 -> durationMs = 20_000;   // bring it: 20초
-            case 2 -> durationMs = 10_000;  // face it: 10초
-            case 3 -> durationMs = 20_000;   // color killer: 20초
-            case 4 -> durationMs = 20_000; // draw it: 20초
+            case 1 -> durationMs = 20_000;
+            case 2 -> durationMs = 10_000;
+            case 3 -> durationMs = 20_000;
+            case 4 -> durationMs = 20_000;
+            case 8 -> durationMs = 15_000; // TimeIt
+            case 9 -> durationMs = 10_000; // FingerIt
             default -> durationMs = 0;
         }
 
@@ -150,7 +154,9 @@ public class GameServiceImpl implements GameService {
             case 2 -> inGameScoreService.FaceitprocessScoring(roomId);
             case 3 -> inGameScoreService.ColoritprocessScoring(roomId);
             case 4 -> inGameScoreService.DrawitprocessScoring(roomId);
-            default -> {  } // TODO: 확장 필요
+            case 8 -> inGameScoreService.TimeitprocessScoring(roomId);
+            case 9 -> inGameScoreService.FingeritprocessScoring(roomId);
+            default -> {  }
         }
 
         gameEndSocket(roomId, roundIdx, gameCode); // 소켓
@@ -164,7 +170,8 @@ public class GameServiceImpl implements GameService {
             case "1" -> BringItItems;
             case "2" -> FaceItItems;
             case "4" -> DrawItItems;
-            // TODO : 게임 확장 시 추가 필요
+            // No keyword games
+            case "3", "8", "9" -> List.of(new HashMap<>());
             default -> throw new IllegalArgumentException("해당 게임이 존재하지 않습니다.");
         };
 

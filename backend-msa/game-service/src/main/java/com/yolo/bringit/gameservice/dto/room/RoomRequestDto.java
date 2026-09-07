@@ -1,6 +1,5 @@
 package com.yolo.bringit.gameservice.dto.room;
 
-import com.yolo.bringit.gameservice.dto.client.ClientResponseDto;
 import lombok.*;
 
 import java.util.List;

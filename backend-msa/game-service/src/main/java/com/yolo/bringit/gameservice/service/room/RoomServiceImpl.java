@@ -56,9 +56,9 @@ public class RoomServiceImpl implements RoomService {
         for (Room room : joinableRooms) {
             List<RoomMember> members = roomToMembers.getOrDefault(room, List.of());
 
-            // 내가 같은 방에 들어가 있는 경우 pass
-            if (members.stream().filter(m -> m.getUserId() == userId).count() > 0) {
-                continue;
+            // 내가 같은 방에 들어가 있는 경우 기존 방 반환
+            if (members.stream().anyMatch(m -> m.getUserId().equals(userId))) {
+                return room;
             }
 
             // 6명 초과 , 차단한 사람이 있으면 패스

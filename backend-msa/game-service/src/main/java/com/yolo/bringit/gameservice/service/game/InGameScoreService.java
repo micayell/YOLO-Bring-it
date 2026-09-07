@@ -14,4 +14,6 @@ public interface InGameScoreService {
     void ColoritprocessScoring(Long roomId);
     void DrawitprocessScoring(Long roomId);
     void FaceitprocessScoring(Long roomId);
+    void FingeritprocessScoring(Long roomId);
+    void TimeitprocessScoring(Long roomId);
 }

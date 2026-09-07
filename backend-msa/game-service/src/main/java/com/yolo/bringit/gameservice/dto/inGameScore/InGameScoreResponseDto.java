@@ -60,4 +60,23 @@ public class InGameScoreResponseDto {
         private int score;
         private String filePath;
     }
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class FingerItScoreResult {
+        private Long memberId;
+        private Long reactionTime;
+        private int score;
+    }
+    
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class TimeItScoreResult {
+        private Long memberId;
+        private Double diffSeconds;
+        private int score;
+    }
 }

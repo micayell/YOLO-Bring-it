@@ -5,12 +5,17 @@ import com.yolo.bringit.gameservice.domain.game.ColorIt;
 import com.yolo.bringit.gameservice.domain.game.GameTime;
 import com.yolo.bringit.gameservice.dto.ai.AiResponseDto;
 import com.yolo.bringit.gameservice.repository.game.ColorItRepository;
+import com.yolo.bringit.gameservice.domain.game.FingerIt;
+import com.yolo.bringit.gameservice.domain.game.TimeIt;
+import com.yolo.bringit.gameservice.repository.game.FingerItRepository;
+import com.yolo.bringit.gameservice.repository.game.TimeItRepository;
 import com.yolo.bringit.gameservice.repository.room.RoomMemberRepository;
 import com.yolo.bringit.gameservice.service.game.GameService;
 import com.yolo.bringit.gameservice.service.game.GameTimeService;
 import com.yolo.bringit.gameservice.service.game.InGameScoreService;
 import com.yolo.bringit.gameservice.util.S3UploaderUtil;
 import lombok.RequiredArgsConstructor;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +34,8 @@ public class NonAiService {
     private final GameTimeService gameTimeService;
     private final InGameScoreService inGameScoreService;
     private final ColorItRepository colorItRepository;
+    private final FingerItRepository fingerItRepository;
+    private final TimeItRepository timeItRepository;
     private final RoomMemberRepository roomMemberRepository;
 
     public AiResponseDto.ColorScoreInfo calculateColorScore(Long roomId, Integer roundIdx, MultipartFile image, Long userId, int r, int g, int b) {
@@ -115,4 +122,42 @@ public class NonAiService {
         }
     }
 
+
+    public Object calculateFingerScore(Long roomId, Integer roundIdx, Long userId, Long reactionTime) {
+        FingerIt result = FingerIt.builder()
+                .key("room:"+roomId+":member:"+userId)
+                .roomId(roomId)
+                .memberId(userId)
+                .result("PASS")
+                .reactionTime(reactionTime)
+                .build();
+        fingerItRepository.save(result);
+        gameService.gameRoundPassSocket(roomId, roundIdx, 9L, userId, "PASS");
+
+        long totalMembers = roomMemberRepository.countByRoom_RoomUid(roomId);
+        long submittedMembers = fingerItRepository.findByRoomId(roomId).size();
+        if (submittedMembers == totalMembers) {
+            gameService.finishRound(roomId, roundIdx, 9L);
+        }
+        return Map.of("userId", userId, "reactionTime", reactionTime);
+    }
+    
+    public Object calculateTimeScore(Long roomId, Integer roundIdx, Long userId, Double diffSeconds) {
+        TimeIt result = TimeIt.builder()
+                .key("room:"+roomId+":member:"+userId)
+                .roomId(roomId)
+                .memberId(userId)
+                .result("PASS")
+                .diffSeconds(diffSeconds)
+                .build();
+        timeItRepository.save(result);
+        gameService.gameRoundPassSocket(roomId, roundIdx, 8L, userId, "PASS");
+
+        long totalMembers = roomMemberRepository.countByRoom_RoomUid(roomId);
+        long submittedMembers = timeItRepository.findByRoomId(roomId).size();
+        if (submittedMembers == totalMembers) {
+            gameService.finishRound(roomId, roundIdx, 8L);
+        }
+        return Map.of("userId", userId, "diffSeconds", diffSeconds);
+    }
 }

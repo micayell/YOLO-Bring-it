@@ -39,6 +39,10 @@ public class InGameRoundServiceImpl implements InGameRoundService {
         gamePool.add(3L);
         gamePool.add(4L);
         gamePool.add(4L);
+        gamePool.add(8L);
+        gamePool.add(8L);
+        gamePool.add(9L);
+        gamePool.add(9L);
 
         Collections.shuffle(gamePool);
         List<Long> gameList = gamePool.subList(0, room.getRoundNum());

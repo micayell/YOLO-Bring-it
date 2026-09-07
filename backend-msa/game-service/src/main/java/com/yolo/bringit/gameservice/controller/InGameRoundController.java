@@ -42,6 +42,7 @@ public class InGameRoundController {
                 keywords = switch (gameInfo.getGameCode().toString()) {
                     case "1", "2", "4" -> gameService.getKeyword(gameInfo.getGameCode());
                     case "3" -> gameService.getRGB();
+                    case "8", "9" -> new HashMap<>(); // TimeIt, FingerIt don't need keyword
                     default -> keywords;
                 };
 
